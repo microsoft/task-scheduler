@@ -12,14 +12,9 @@ const graph = getDependencyGraph();
 // Defines a 4-steps pipeline.
 const pipeline = createPipeline(graph)
   .addStep({
-    name: "computeHash",
+    name: "prepare",
     type: "topological",
-    run: computeHash,
-  })
-  .addStep({
-    name: "fetch",
-    type: "parallel",
-    run: fetch,
+    run: prepare,
   })
   .addStep({
     name: "build",
@@ -27,17 +22,13 @@ const pipeline = createPipeline(graph)
     run: build,
   })
   .addStep({
-    name: "put",
+    name: "test",
     type: "parallel",
-    run: fetch,
+    run: test,
   })
   .go();
 
-async function computeHash(cwd) {
-...
-}
-
-async function fetch(cwd) {
+async function prepare(cwd) {
 ...
 }
 
@@ -45,7 +36,7 @@ async function build(cwd) {
 ...
 }
 
-async function put(cwd) {
+async function test(cwd) {
 ...
 }
 
@@ -54,9 +45,9 @@ async function put(cwd) {
 Here is how the tasks defined above would run on a repo which has two packages A and B, A depending on B:
 ```
 
-A:               [-computHash-] [------fetch------]      [------build------] [--put--]
+A:            [-prepare-]         [------build------] [----test----]
 
-B: [-computHash-] [------fetch------] [------build------] [--put--]
+B: [-prepare-] [------build------] [----test----]
 
 ----------> time
 ```
