@@ -51,6 +51,16 @@ async function put(cwd) {
 
 ```
 
+Here is how the tasks defined above would run on a repo which has two packages A and B, A depending on B:
+```
+
+A:               [-computHash-] [------fetch------]      [------build------] [--put--]
+
+B: [-computHash-] [------fetch------] [------build------] [--put--]
+
+----------> time
+```
+
 # Contributing
 
 This project welcomes contributions and suggestions.  Most contributions require you to agree to a
