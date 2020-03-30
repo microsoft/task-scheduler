@@ -94,6 +94,7 @@ async function go(steps: Step[], graph: Graph): Promise<void> {
       state.state.stepName,
       "failure"
     );
+    process.exit(1);
   }
 }
 
