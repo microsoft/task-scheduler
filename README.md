@@ -1,3 +1,53 @@
+# @microsoft/task-scheduler
+
+Run a sequence of steps across all the packages of a monorepo.
+
+# Usage
+
+```js
+const { createPipeline } = require("./scheduler");
+
+// Defines a 4-steps pipeline.
+const pipeline = createPipeline(workspaces)
+  .addStep({
+    name: "computeHash",
+    type: "topological",
+    run: computeHash,
+  })
+  .addStep({
+    name: "fetch",
+    type: "parallel",
+    run: fetch,
+  })
+  .addStep({
+    name: "build",
+    type: "topological",
+    run: build,
+  })
+  .addStep({
+    name: "put",
+    type: "parallel",
+    run: fetch,
+  })
+  .go();
+
+async function computeHash(cwd) {
+...
+}
+
+async function fetch(cwd) {
+...
+}
+
+async function build(cwd) {
+...
+}
+
+async function put(cwd) {
+...
+}
+
+```
 
 # Contributing
 
