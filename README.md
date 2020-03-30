@@ -7,8 +7,10 @@ Run a sequence of steps across all the packages of a monorepo.
 ```js
 const { createPipeline } = require("./scheduler");
 
+const graph = getDependencyGraph();
+
 // Defines a 4-steps pipeline.
-const pipeline = createPipeline(workspaces)
+const pipeline = createPipeline(graph)
   .addStep({
     name: "computeHash",
     type: "topological",
