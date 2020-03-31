@@ -2,6 +2,14 @@
 
 Run a sequence of steps across all the packages of a monorepo.
 
+# Why
+
+- It could be used by monorepo because it does not assume any workspace manager.
+- It let the user choose when to spawn processes for steps or when to run the step
+in the main thread, depending on the need for each step.
+- It optimizes CI builds performance by avoiding unnecessary waiting (eg. with lerna you would need to wait for all build steps to be done before starting the first test step)
+
+
 # Usage
 
 ```js
@@ -42,12 +50,23 @@ async function test(cwd) {
 
 ```
 
+
 Here is how the tasks defined above would run on a repo which has two packages A and B, A depending on B:
 ```
 
 A:            [-prepare-]         [------build------] [----test----]
 
 B: [-prepare-] [------build------] [----test----]
+
+----------> time
+```
+
+Here is how the same workflow would be executed by using lerna:
+```
+
+A:            [-prepare-]                   [------build------] [----test----]
+
+B: [-prepare-]           [------build------]                    [----test----]
 
 ----------> time
 ```
