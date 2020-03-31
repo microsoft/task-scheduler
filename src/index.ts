@@ -7,6 +7,27 @@ export type Graph = {
 
 export type Result = { success: boolean; stdout: string; stderr: string };
 
+export type Logger = {
+  log(message: string): void;
+  error(message: string): void;
+};
+
+export type Globals = {
+  logger: Logger;
+  cwd(): string;
+  exit(int: number): void;
+};
+
+export const defaultGlobals: Globals = {
+  logger: console,
+  cwd() {
+    return process.cwd();
+  },
+  exit(int: number) {
+    process.exit(int);
+  },
+};
+
 export type Step = {
   name: string;
   run: (cwd: string) => Promise<Result>;
@@ -18,31 +39,49 @@ export type Pipeline = {
   go: () => Promise<void>;
 };
 
-export function createPipeline(graph: Graph): Pipeline {
-  return createPipelineInternal([], graph);
+export function createPipeline(
+  graph: Graph,
+  globals: Globals = defaultGlobals
+): Pipeline {
+  return createPipelineInternal([], graph, globals);
 }
 
-function createPipelineInternal(steps: Step[], graph: Graph): Pipeline {
+function createPipelineInternal(
+  steps: Step[],
+  graph: Graph,
+  globals: Globals
+): Pipeline {
   const pipeline: Pipeline = {
     addStep: (step: Step): Pipeline => {
-      return createPipelineInternal([...steps, step], graph);
+      return createPipelineInternal([...steps, step], graph, globals);
     },
-    go: async () => await go(steps, graph),
+    go: async () => await go(steps, graph, globals),
   };
 
   return pipeline;
 }
 
-async function go(steps: Step[], graph: Graph): Promise<void> {
+/*
+ * promises = { "a": { "step1": promise, "step2": promise }, "b": { "step1": promise, "step2": promise }} 
+ * promises = { "b": {}, "a": {}} 
+ * promises = { "b": { "step1" : promise }, "a": { "step1": promise}} 
+
+ *
+ *
+ */
+
+async function go(
+  steps: Step[],
+  graph: Graph,
+  globals: Globals
+): Promise<void> {
   const dependenciesInOrder = getPackagesInDependencyOrder(graph);
 
   const promises: { [name: string]: { [script: string]: Promise<void> } } = {};
   dependenciesInOrder.forEach((d) => (promises[d] = {}));
 
   let bail = false;
-  let state: {
-    state: undefined | { stepName: string; package: string; message: string };
-  } = { state: undefined };
+  let state: { stepName: string; package: string; message: string }[] = [];
 
   steps.forEach((step, i) => {
     dependenciesInOrder.forEach((p) => {
@@ -50,38 +89,40 @@ async function go(steps: Step[], graph: Graph): Promise<void> {
         if (i !== 0) {
           await promises[p][steps[i - 1].name];
         }
+
         if (step.type === "topological") {
           const dependencies = graph[p].dependencies.map(
             (d) => promises[d][step.name]
           );
           await Promise.all(dependencies);
         }
+
         if (bail) {
           resolve();
           return;
         }
         try {
           const result = await step.run(
-            path.join(process.cwd(), graph[p].location)
+            path.join(globals.cwd(), graph[p].location)
           );
           const message = formatOutput(result);
           if (result.success) {
-            outputResult(message, p, step.name, "success");
+            outputResult(message, p, step.name, "success", globals.logger);
           } else {
             bail = true;
-            state.state = state.state || {
+            state.push({
               stepName: step.name,
               package: p,
               message,
-            };
+            });
           }
         } catch (e) {
           bail = true;
-          state.state = state.state || {
+          state.push({
             stepName: step.name,
             package: p,
             message: `task-scheduler: the step ${step.name} failed with the following message in ${graph[p].location}:${EOL}${e.message}`,
-          };
+          });
         }
 
         resolve();
@@ -92,14 +133,12 @@ async function go(steps: Step[], graph: Graph): Promise<void> {
   await Promise.all(
     dependenciesInOrder.map((p) => promises[p][steps[steps.length - 1].name])
   );
-  if (state.state) {
-    outputResult(
-      state.state.message,
-      state.state.package,
-      state.state.stepName,
-      "failure"
+
+  if (state.length !== 0) {
+    state.forEach((s) =>
+      outputResult(s.message, s.package, s.stepName, "failure", globals.logger)
     );
-    process.exit(1);
+    globals.exit(1);
   }
 }
 
@@ -107,25 +146,40 @@ function outputResult(
   message: string,
   p: string,
   stepName: string,
-  result: "success" | "failure"
+  result: "success" | "failure",
+  logger: Logger
 ): void {
   const state = result === "success" ? "Done" : "Failed";
+  const log = result === "success" ? logger.log : logger.error;
   if (message === "") {
-    console.log(`${state} ${stepName} in ${p}${EOL}`);
+    log(`${state} ${stepName} in ${p}${EOL}`);
   } else {
-    console.log(` / ${state} ${stepName} in ${p}`);
-    console.log(prefix(message, " | "));
-    console.log(` \\ ${state} ${stepName} in ${p}${EOL}`);
+    log(` / ${state} ${stepName} in ${p}`);
+    log(prefix(message, " | "));
+    log(` \\ ${state} ${stepName} in ${p}${EOL}`);
   }
 }
 
 function prefix(message: string, prefix: string): string {
-  if (message === "") {
-    return message;
-  }
-  return prefix + message.replace(/\r\n|\n/g, `${EOL}${prefix}`);
+  return (
+    prefix +
+    message
+      .split(EOL)
+      .filter((m) => m !== "")
+      .join(`${EOL}${prefix}`)
+  );
 }
 
+/*
+ * format stdout and stderr in the following format:
+ *
+ * ```
+ * STDOUT:
+ *  | some output
+ * STDERR:
+ *  | some stderr output
+ * ```
+ */
 function formatOutput(result: Result): string {
   let message: string = "";
   if (result.stdout !== ``) {
