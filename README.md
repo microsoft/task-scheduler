@@ -4,11 +4,11 @@ Run a sequence of steps across all the packages of a monorepo.
 
 # Why
 
-- It could be used by monorepo because it does not assume any workspace manager.
-- It let the user choose when to spawn processes for steps or when to run the step
-in the main thread, depending on the need for each step.
-- It optimizes CI builds performance by avoiding unnecessary waiting (eg. with lerna you would need to wait for all build steps to be done before starting the first test step)
-
+- This tool does not assume any workspace/package manager so it can be used on any JavaScript repository.
+- The steps run on the main thread, sparing the cost of spawning one process per step. If parallelization is needed, the implementation of the steps can spawn processes.
+- This tools optimizes CI builds performance by avoiding unnecessary waiting (see example below).
+- This tools has no dependencies and is very small.
+- Its interface makes it easy to compose with other tools to get fancy pipelines (eg. parallelization, profiling, throttling...)
 
 # Usage
 
@@ -17,8 +17,8 @@ const { createPipeline } = require("./scheduler");
 
 const graph = getDependencyGraph();
 
-// Defines a 4-steps pipeline.
-const pipeline = createPipeline(graph)
+// Defines a 3-steps pipeline.
+await createPipeline(graph)
   .addStep({
     name: "prepare",
     type: "topological",
