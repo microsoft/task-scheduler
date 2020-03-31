@@ -62,12 +62,7 @@ function createPipelineInternal(
 }
 
 /*
- * promises = { "a": { "step1": promise, "step2": promise }, "b": { "step1": promise, "step2": promise }} 
- * promises = { "b": {}, "a": {}} 
- * promises = { "b": { "step1" : promise }, "a": { "step1": promise}} 
-
- *
- *
+ * Main function running the pipeline
  */
 
 async function go(
@@ -101,27 +96,14 @@ async function go(
           resolve();
           return;
         }
-        try {
-          const result = await step.run(
-            path.join(globals.cwd(), graph[p].location)
-          );
-          const message = formatOutput(result);
-          if (result.success) {
-            outputResult(message, p, step.name, "success", globals.logger);
-          } else {
-            bail = true;
-            state.push({
-              stepName: step.name,
-              package: p,
-              message,
-            });
-          }
-        } catch (e) {
+
+        const error = await runAndLogStep(step, graph, p, globals);
+        if (typeof error === "string") {
           bail = true;
           state.push({
             stepName: step.name,
             package: p,
-            message: `task-scheduler: the step ${step.name} failed with the following message in ${graph[p].location}:${EOL}${e.message}`,
+            message: error,
           });
         }
 
@@ -142,6 +124,28 @@ async function go(
   }
 }
 
+async function runAndLogStep(
+  step: Step,
+  graph: Graph,
+  p: string,
+  globals: Globals
+): Promise<string | undefined> {
+  try {
+    const result = await step.run(path.join(globals.cwd(), graph[p].location));
+    const message = formatOutput(result);
+    if (result.success) {
+      outputResult(message, p, step.name, "success", globals.logger);
+    } else {
+      return message;
+    }
+  } catch (e) {
+    return `task-scheduler: the step ${step.name} failed with the following message in ${graph[p].location}:${EOL}${e.message}`;
+  }
+}
+
+/*
+ * Ouptut to console the result of a step.
+ */
 function outputResult(
   message: string,
   p: string,
@@ -160,6 +164,9 @@ function outputResult(
   }
 }
 
+/*
+ * Take a block of text and add a prefix in front of each line.
+ */
 function prefix(message: string, prefix: string): string {
   return (
     prefix +
@@ -195,6 +202,12 @@ function formatOutput(result: Result): string {
   return message;
 }
 
+/*
+ * Return an array of packages from the graph,
+ * the array if in order which guaranty the following:
+ * for a given package, it is positioned in the array after
+ * all its dependencies.
+ */
 function getPackagesInDependencyOrder(graph: Graph): string[] {
   let unprocessed = Object.keys(graph);
 

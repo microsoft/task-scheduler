@@ -360,6 +360,37 @@ test("validating failing step output with nothing written to console", async () 
   expectedStderr.forEach((m, i) => expect(m).toBe(globals.stderr[i]));
 });
 
+test("validating throwing step output", async () => {
+  const graph = {
+    A: { location: "a", dependencies: [] },
+  };
+
+  const run = jest.fn();
+
+  run.mockImplementation((_cwd) => {
+    throw new Error("it failed");
+  });
+
+  const globals = getGlobals();
+  await createPipeline(graph, globals)
+    .addStep({ name: "step1", type: "parallel", run })
+    .go();
+
+  const expectedStderr: string[] = [
+    " / Failed step1 in A",
+    " | task-scheduler: the step step1 failed with the following message in a:",
+    " | it failed",
+    " \\ Failed step1 in A",
+    "",
+  ];
+  const expectedStdout: string[] = [];
+
+  expect(globals.stderr.length).toBe(expectedStderr.length);
+  expect(globals.stdout.length).toBe(expectedStdout.length);
+  expectedStdout.forEach((m, i) => expect(m).toBe(globals.stdout[i]));
+  expectedStderr.forEach((m, i) => expect(m).toBe(globals.stderr[i]));
+});
+
 test("validating failing step output", async () => {
   const graph = {
     A: { location: "a", dependencies: [] },
@@ -497,7 +528,6 @@ test("the message of the failing step is output at the end", async () => {
     "",
   ];
 
-  console.log(globals.stdout);
   expect(globals.stdout.length).toBe(expectedStdout.length);
   expectedStdout.forEach((m, i) => expect(m).toBe(globals.stdout[i]));
 });
