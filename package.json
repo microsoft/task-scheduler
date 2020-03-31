@@ -7,7 +7,8 @@
   "author": "Vincent Bailly <vibailly@tuta.io>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc && jest"
+    "build": "tsc && jest",
+    "prepublish": "tsc && jest"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
