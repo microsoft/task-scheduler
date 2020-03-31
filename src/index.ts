@@ -15,7 +15,7 @@ export type Step = {
 
 export type Pipeline = {
   addStep: (step: Step) => Pipeline;
-  go: () => void;
+  go: () => Promise<void>;
 };
 
 export function createPipeline(graph: Graph): Pipeline {
@@ -27,7 +27,7 @@ function createPipelineInternal(steps: Step[], graph: Graph): Pipeline {
     addStep: (step: Step): Pipeline => {
       return createPipelineInternal([...steps, step], graph);
     },
-    go: () => go(steps, graph),
+    go: async () => await go(steps, graph),
   };
 
   return pipeline;
