@@ -7,11 +7,12 @@
   "author": "Vincent Bailly <vibailly@tuta.io>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc && jest"
   },
-  "dependencies": {
+  "devDependencies": {
+    "@types/jest": "^25.1.4",
     "@types/node": "12.x.x",
-    "p-queue": "^6.3.0",
+    "jest": "^25.2.4",
     "prettier": "^2.0.2",
     "typescript": "^3.8.3"
   }

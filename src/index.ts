@@ -1,8 +1,5 @@
 import * as path from "path";
 import { EOL } from "os";
-const { default: PQueue } = require(`p-queue`);
-
-const outputQueue = new PQueue({ concurrency: 1 });
 
 export type Graph = {
   [name: string]: { location: string; dependencies: string[] };
@@ -63,20 +60,28 @@ async function go(steps: Step[], graph: Graph): Promise<void> {
           resolve();
           return;
         }
-        const result = await step.run(
-          path.join(process.cwd(), graph[p].location)
-        );
-        const message = formatOutput(result);
-        if (result.success) {
-          outputResult(message, p, step.name, "success");
-        } else {
+        try {
+          const result = await step.run(
+            path.join(process.cwd(), graph[p].location)
+          );
+          const message = formatOutput(result);
+          if (result.success) {
+            outputResult(message, p, step.name, "success");
+          } else {
+            bail = true;
+            state.state = state.state || {
+              stepName: step.name,
+              package: p,
+              message,
+            };
+          }
+        } catch (e) {
           bail = true;
           state.state = state.state || {
             stepName: step.name,
             package: p,
-            message,
+            message: `task-scheduler: the step ${step.name} failed with the following message in ${graph[p].location}:${EOL}${e.message}`,
           };
-          resolve();
         }
 
         resolve();
@@ -104,16 +109,14 @@ function outputResult(
   stepName: string,
   result: "success" | "failure"
 ): void {
-  outputQueue.add(async () => {
-    const state = result === "success" ? "Done" : "Failed";
-    if (message === "") {
-      console.log(`${state} ${stepName} in ${p}${EOL}`);
-    } else {
-      console.log(` / ${state} ${stepName} in ${p}`);
-      console.log(prefix(message, " | "));
-      console.log(` \\ ${state} ${stepName} in ${p}${EOL}`);
-    }
-  });
+  const state = result === "success" ? "Done" : "Failed";
+  if (message === "") {
+    console.log(`${state} ${stepName} in ${p}${EOL}`);
+  } else {
+    console.log(` / ${state} ${stepName} in ${p}`);
+    console.log(prefix(message, " | "));
+    console.log(` \\ ${state} ${stepName} in ${p}${EOL}`);
+  }
 }
 
 function prefix(message: string, prefix: string): string {
