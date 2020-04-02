@@ -35,6 +35,9 @@ function getGlobalsWithOnlyOneConsoleStream(): TestingGlobals {
     get exitCode() {
       return _exitCode;
     },
+    errorFormatter(err: Error): string {
+      return `stack trace for following error: ${err.message}`;
+    },
   };
 }
 function getGlobals(): TestingGlobals {
@@ -65,6 +68,9 @@ function getGlobals(): TestingGlobals {
     },
     get exitCode() {
       return _exitCode;
+    },
+    errorFormatter(err: Error): string {
+      return `stack trace for following error: ${err.message}`;
     },
   };
 }
@@ -379,7 +385,7 @@ test("validating throwing step output", async () => {
   const expectedStderr: string[] = [
     " / Failed step1 in A",
     " | task-scheduler: the step step1 failed with the following message in a:",
-    " | it failed",
+    " | stack trace for following error: it failed",
     " \\ Failed step1 in A",
     "",
   ];

@@ -16,6 +16,7 @@ export type Globals = {
   logger: Logger;
   cwd(): string;
   exit(int: number): void;
+  errorFormatter(err: Error): string;
 };
 
 export const defaultGlobals: Globals = {
@@ -25,6 +26,9 @@ export const defaultGlobals: Globals = {
   },
   exit(int: number) {
     process.exit(int);
+  },
+  errorFormatter(err: Error): string {
+    return err.stack || err.message;
   },
 };
 
@@ -139,7 +143,11 @@ async function runAndLogStep(
       return message;
     }
   } catch (e) {
-    return `task-scheduler: the step ${step.name} failed with the following message in ${graph[p].location}:${EOL}${e.message}`;
+    return `task-scheduler: the step ${
+      step.name
+    } failed with the following message in ${
+      graph[p].location
+    }:${EOL}${globals.errorFormatter(e)}`;
   }
 }
 
