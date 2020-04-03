@@ -8,7 +8,8 @@
   "license": "MIT",
   "scripts": {
     "build": "tsc && jest",
-    "prepublish": "tsc && jest"
+    "lint": "eslint --fix . --ext .ts",
+    "prepublishOnly": "eslint . --ext .ts && tsc && jest"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
@@ -19,9 +20,26 @@
     "eslint-config-prettier": "^6.10.1",
     "eslint-plugin-import": "^2.20.2",
     "eslint-plugin-prettier": "^3.1.2",
+    "husk": "^0.5.3",
     "jest": "^25.2.4",
+    "lint-staged": "^10.1.1",
     "prettier": "^2.0.2",
     "ts-jest": "^25.3.0",
     "typescript": "^3.8.3"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "**/*.{js,json,md}": [
+      "prettier --write",
+      "git add"
+    ],
+    "**/*.{ts}": [
+      "eslint --fix",
+      "git add"
+    ]
   }
 }

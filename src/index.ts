@@ -65,6 +65,68 @@ function createPipelineInternal(
   return pipeline;
 }
 
+type Promises = { [name: string]: { [script: string]: Promise<void> } };
+
+async function dependencySteps(
+  graph: Graph,
+  promises: Promises,
+  steps: Step[],
+  step: Step,
+  p: string,
+  stepNumber: number,
+  shouldBail: () => boolean
+): Promise<void> {
+  if (stepNumber !== 0) {
+    await promises[p][steps[stepNumber - 1].name];
+  }
+
+  if (step.type === "topological") {
+    const dependencies = graph[p].dependencies.map(
+      (d) => promises[d][step.name]
+    );
+    await Promise.all(dependencies);
+  }
+
+  if (shouldBail()) {
+    throw new Error("Step should bail");
+  }
+}
+
+async function executeStep(
+  globals: Globals,
+  graph: Graph,
+  promises: Promises,
+  steps: Step[],
+  step: Step,
+  p: string,
+  stepNumber: number,
+  shouldBail: () => boolean
+): Promise<void> {
+  try {
+    await dependencySteps(
+      graph,
+      promises,
+      steps,
+      step,
+      p,
+      stepNumber,
+      shouldBail
+    );
+  } catch {
+    return;
+  }
+
+  try {
+    await runAndLogStep(step, graph, p, globals);
+  } catch (error) {
+    throw {
+      stepName: step.name,
+      package: p,
+      message: error,
+    };
+  }
+}
+
 /*
  * Main function running the pipeline
  */
@@ -76,43 +138,29 @@ async function go(
 ): Promise<void> {
   const dependenciesInOrder = getPackagesInDependencyOrder(graph);
 
-  const promises: { [name: string]: { [script: string]: Promise<void> } } = {};
+  const promises: Promises = {};
   dependenciesInOrder.forEach((d) => (promises[d] = {}));
 
   let bail = false;
-  let state: { stepName: string; package: string; message: string }[] = [];
+  const state: { stepName: string; package: string; message: string }[] = [];
 
   steps.forEach((step, i) => {
     dependenciesInOrder.forEach((p) => {
-      promises[p][step.name] = new Promise(async (resolve) => {
-        if (i !== 0) {
-          await promises[p][steps[i - 1].name];
-        }
-
-        if (step.type === "topological") {
-          const dependencies = graph[p].dependencies.map(
-            (d) => promises[d][step.name]
-          );
-          await Promise.all(dependencies);
-        }
-
-        if (bail) {
-          resolve();
-          return;
-        }
-
-        const error = await runAndLogStep(step, graph, p, globals);
-        if (typeof error === "string") {
+      promises[p][step.name] = executeStep(
+        globals,
+        graph,
+        promises,
+        steps,
+        step,
+        p,
+        i,
+        () => bail
+      ).catch(
+        (error: { stepName: string; package: string; message: string }) => {
           bail = true;
-          state.push({
-            stepName: step.name,
-            package: p,
-            message: error,
-          });
+          state.push(error);
         }
-
-        resolve();
-      });
+      );
     });
   });
 
@@ -128,26 +176,43 @@ async function go(
   }
 }
 
+async function runStepWithExceptionHandling(
+  globals: Globals,
+  name: string,
+  location: string,
+  runner: () => Promise<Result>
+): Promise<Result> {
+  try {
+    return await runner();
+  } catch (e) {
+    return {
+      success: false,
+      stdout: "",
+      stderr: `task-scheduler: the step ${name} failed with the following message in ${location}:${EOL}${globals.errorFormatter(
+        e
+      )}`,
+    };
+  }
+}
+
 async function runAndLogStep(
   step: Step,
   graph: Graph,
   p: string,
   globals: Globals
-): Promise<string | undefined> {
-  try {
-    const result = await step.run(path.join(globals.cwd(), graph[p].location));
-    const message = formatOutput(result);
-    if (result.success) {
-      outputResult(message, p, step.name, "success", globals.logger);
-    } else {
-      return message;
-    }
-  } catch (e) {
-    return `task-scheduler: the step ${
-      step.name
-    } failed with the following message in ${
-      graph[p].location
-    }:${EOL}${globals.errorFormatter(e)}`;
+): Promise<void> {
+  const result = await runStepWithExceptionHandling(
+    globals,
+    step.name,
+    graph[p].location,
+    () => step.run(path.join(globals.cwd(), graph[p].location))
+  );
+
+  const message = formatOutput(result);
+  if (result.success) {
+    outputResult(message, p, step.name, "success", globals.logger);
+  } else {
+    throw message;
   }
 }
 
@@ -196,7 +261,7 @@ function prefix(message: string, prefix: string): string {
  * ```
  */
 function formatOutput(result: Result): string {
-  let message: string = "";
+  let message = "";
   if (result.stdout !== ``) {
     message += `STDOUT${EOL}`;
     message += prefix(result.stdout, " | ");

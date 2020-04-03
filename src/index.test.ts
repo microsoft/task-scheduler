@@ -1,5 +1,5 @@
-import { createPipeline, Result, Globals } from ".";
 import { EOL } from "os";
+import { createPipeline, Result, Globals } from ".";
 
 describe("task scheduling", () => {
   const graph = {
@@ -240,8 +240,9 @@ describe("output", () => {
 
     const expectedStderr: string[] = [
       ` / Failed ${name} in A`,
-      ` | task-scheduler: the step ${name} failed with the following message in a:`,
-      ` | stack trace for following error: error has been thrown in ${name} for /a`,
+      ` | STDERR`,
+      ` |  | task-scheduler: the step ${name} failed with the following message in a:`,
+      ` |  | stack trace for following error: error has been thrown in ${name} for /a`,
       ` \\ Failed ${name} in A`,
       ``,
     ];
@@ -335,10 +336,10 @@ type TestingGlobals = Globals & {
   exitCode: number;
 };
 
-function getGlobals(stdoutAsStderr: boolean = false): TestingGlobals {
+function getGlobals(stdoutAsStderr = false): TestingGlobals {
   const _stdout: string[] = [];
   const _stderr: string[] = stdoutAsStderr ? _stdout : [];
-  let _exitCode: number = 0;
+  let _exitCode = 0;
 
   return {
     validateOuput(expectedStdout: string[], expectedStderr: string[]): void {
@@ -361,13 +362,13 @@ function getGlobals(stdoutAsStderr: boolean = false): TestingGlobals {
     exit(int: number): void {
       _exitCode = int;
     },
-    get stdout() {
+    get stdout(): string[] {
       return _stdout;
     },
-    get stderr() {
+    get stderr(): string[] {
       return _stderr;
     },
-    get exitCode() {
+    get exitCode(): number {
       return _exitCode;
     },
     errorFormatter(err: Error): string {
@@ -376,21 +377,28 @@ function getGlobals(stdoutAsStderr: boolean = false): TestingGlobals {
   };
 }
 
-function makeTracingContext() {
+type StepResult = {
+  throws?: boolean;
+  success?: boolean;
+  stdout?: string;
+  stderr?: string;
+};
+
+type StepMock = {
+  fn: () => Promise<Result>;
+  name: string;
+  started: (cwd: string) => string;
+  finished: (cwd: string) => string;
+};
+
+function makeTracingContext(): {
+  logs: string[];
+  makeStep: (options?: StepResult) => StepMock;
+} {
   const logs: string[] = [];
   return {
     logs,
-    makeStep(options?: {
-      throws?: boolean;
-      success?: boolean;
-      stdout?: string;
-      stderr?: string;
-    }): {
-      fn: () => Promise<Result>;
-      name: string;
-      started: (cwd: string) => string;
-      finished: (cwd: string) => string;
-    } {
+    makeStep(options?: StepResult): StepMock {
       const name = Math.random().toString(36);
       const _throws =
         options && typeof options.throws === "boolean" ? options.throws : false;
@@ -425,7 +433,8 @@ function makeTracingContext() {
           }, 50);
         });
       });
-      return { fn: run, ...messages, name };
+      const result = { fn: run, ...messages, name };
+      return result;
     },
   };
 }
