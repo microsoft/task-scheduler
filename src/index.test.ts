@@ -1,5 +1,10 @@
 import { EOL } from "os";
-import { createPipeline, Result, Globals } from ".";
+import * as fs from "fs";
+import { Readable } from "stream";
+import { createPipelineInternal, Globals } from "./pipeline";
+import { Step, RunResult } from "./publicInterfaces";
+
+const tempy = require("tempy");
 
 describe("task scheduling", () => {
   const graph = {
@@ -7,77 +12,57 @@ describe("task scheduling", () => {
     B: { location: "b", dependencies: [] },
   };
 
-  test("testInOrder", async () => {
-    const { fn: run } = makeTracingContext().makeStep();
-
-    await createPipeline(graph, getGlobals())
-      .addStep({ name: "step1", type: "topological", run })
-      .go();
-
-    expect(run).toHaveBeenCalledTimes(2);
-    expect(run).toHaveBeenNthCalledWith(1, "/b");
-    expect(run).toHaveBeenNthCalledWith(2, "/a");
-  });
-
   test("tological steps wait for dependencies to be done", async () => {
-    const tracingContext = makeTracingContext();
-    const { fn: run, started, finished, name } = tracingContext.makeStep();
+    const tracingContext = makeTestEnvironment();
+    const step = tracingContext.makeStep();
 
-    await createPipeline(graph, getGlobals())
-      .addStep({ name, type: "topological", run })
+    await createPipelineInternal(graph, getGlobals())
+      .addTopologicalStep(step)
       .go();
 
     const expected = [
-      started("/b"),
-      finished("/b"),
-      started("/a"),
-      finished("/a"),
+      step.started("/b"),
+      step.finished("/b"),
+      step.started("/a"),
+      step.finished("/a"),
     ];
 
     expected.forEach((e, i) => expect(e).toBe(tracingContext.logs[i]));
   });
 
   test("parallel steps dont wait for dependencies to be done", async () => {
-    const tracingContext = makeTracingContext();
-    const { fn: run, started, finished } = tracingContext.makeStep();
+    const tracingContext = makeTestEnvironment();
+    const step = tracingContext.makeStep();
 
-    await createPipeline(graph, getGlobals())
-      .addStep({ name: "step1", type: "parallel", run })
+    await createPipelineInternal(graph, getGlobals())
+      .addParallelStep(step)
       .go();
 
     const expected = [
-      started("/b"),
-      started("/a"),
-      finished("/b"),
-      finished("/a"),
+      step.started("/b"),
+      step.started("/a"),
+      step.finished("/b"),
+      step.finished("/a"),
     ];
 
     expected.forEach((e, i) => expect(e).toBe(tracingContext.logs[i]));
   });
 
   test("tological steps wait for the previous step", async () => {
-    const tracingContext = makeTracingContext();
-    const {
-      fn: run,
-      started: runStarted,
-      finished: runFinished,
-    } = tracingContext.makeStep();
-    const {
-      fn: lint,
-      started: lintStarted,
-      finished: lintFinished,
-    } = tracingContext.makeStep();
+    const tracingContext = makeTestEnvironment();
+    const step1 = tracingContext.makeStep();
+    const step2 = tracingContext.makeStep();
 
-    await createPipeline(graph, getGlobals())
-      .addStep({ name: "step1", type: "parallel", run })
-      .addStep({ name: "step2", type: "topological", run: lint })
+    await createPipelineInternal(graph, getGlobals())
+      .addTopologicalStep(step1)
+      .addTopologicalStep(step2)
       .go();
 
     const expected = [
-      runStarted("/b"),
-      runFinished("/b"),
-      lintStarted("/b"),
-      lintFinished("/b"),
+      step1.started("/b"),
+      step1.finished("/b"),
+      step2.started("/b"),
+      step2.finished("/b"),
     ];
 
     expected.forEach((e, i) =>
@@ -88,33 +73,25 @@ describe("task scheduling", () => {
   });
 
   test("parallel steps wait for the previous step", async () => {
-    const tracingContext = makeTracingContext();
-    const {
-      fn: run,
-      started: runStarted,
-      finished: runFinished,
-    } = tracingContext.makeStep();
-    const {
-      fn: lint,
-      started: lintStarted,
-      finished: lintFinished,
-    } = tracingContext.makeStep();
+    const tracingContext = makeTestEnvironment();
+    const step1 = tracingContext.makeStep();
+    const step2 = tracingContext.makeStep();
 
-    await createPipeline(graph, getGlobals())
-      .addStep({ name: "step1", type: "parallel", run })
-      .addStep({ name: "step2", type: "parallel", run: lint })
+    await createPipelineInternal(graph, getGlobals())
+      .addParallelStep(step1)
+      .addParallelStep(step2)
       .go();
 
     const expected = [
-      runStarted("/a"),
-      runFinished("/a"),
-      lintStarted("/a"),
-      lintFinished("/a"),
+      step1.started("/b"),
+      step1.finished("/b"),
+      step2.started("/b"),
+      step2.finished("/b"),
     ];
 
     expected.forEach((e, i) =>
       expect(e).toBe(
-        tracingContext.logs.filter((line) => line.includes("/a"))[i]
+        tracingContext.logs.filter((line) => line.includes("/b"))[i]
       )
     );
   });
@@ -126,12 +103,11 @@ describe("failing steps", () => {
       A: { location: "a", dependencies: [] },
     };
 
-    const { fn: run } = makeTracingContext().makeStep({ success: false });
-
+    const tracingContext = makeTestEnvironment();
+    const step = tracingContext.makeStep({ success: false });
     const globals = getGlobals();
-    await createPipeline(graph, globals)
-      .addStep({ name: "step1", type: "parallel", run })
-      .go();
+
+    await createPipelineInternal(graph, globals).addParallelStep(step).go();
 
     expect(globals.exitCode).toBe(1);
   });
@@ -141,16 +117,21 @@ describe("failing steps", () => {
       A: { location: "a", dependencies: [] },
     };
 
-    const tracingContext = makeTracingContext();
-    const { fn: run } = tracingContext.makeStep({ success: false });
-    const { fn: lint } = tracingContext.makeStep({ success: true });
+    const tracingContext = makeTestEnvironment();
+    const step1 = tracingContext.makeStep({ success: false });
+    const step2 = tracingContext.makeStep();
 
-    await createPipeline(graph, getGlobals())
-      .addStep({ name: "run", type: "topological", run })
-      .addStep({ name: "lint", type: "topological", run: lint })
+    await createPipelineInternal(graph, getGlobals())
+      .addParallelStep(step1)
+      .addParallelStep(step2)
       .go();
 
-    expect(lint).toHaveBeenCalledTimes(0);
+    expect(
+      tracingContext.logs.filter((l) => l.includes(step1.started("/a"))).length
+    ).toBe(1);
+    expect(
+      tracingContext.logs.filter((l) => l.includes(step2.started("/a"))).length
+    ).toBe(0);
   });
 });
 
@@ -160,25 +141,23 @@ describe("output", () => {
       A: { location: "a", dependencies: [] },
     };
 
-    const tracingContext = makeTracingContext();
-    const { fn: run } = tracingContext.makeStep({
+    const tracingContext = makeTestEnvironment();
+    const step = tracingContext.makeStep({
       stdout: "step stdout",
       stderr: "step stderr",
     });
 
     const globals = getGlobals();
-    await createPipeline(graph, globals)
-      .addStep({ name: "step1", type: "parallel", run })
-      .go();
+    await createPipelineInternal(graph, globals).addParallelStep(step).go();
 
     const expectedStdout: string[] = [
-      " / Done step1 in A",
-      " | STDOUT",
-      " |  | step stdout",
-      " | STDERR",
-      " |  | step stderr",
-      " \\ Done step1 in A",
-      "",
+      ` / Done ${step.name} in A`,
+      ` | STDOUT`,
+      ` |  | step stdout`,
+      ` | STDERR`,
+      ` |  | step stderr`,
+      ` \\ Done ${step.name} in A`,
+      ``,
     ];
     const expectedStderr: string[] = [];
 
@@ -190,15 +169,13 @@ describe("output", () => {
       A: { location: "a", dependencies: [] },
     };
 
-    const tracingContext = makeTracingContext();
-    const { fn: run } = tracingContext.makeStep();
+    const tracingContext = makeTestEnvironment();
+    const step = tracingContext.makeStep();
 
     const globals = getGlobals();
-    await createPipeline(graph, globals)
-      .addStep({ name: "step1", type: "parallel", run })
-      .go();
+    await createPipelineInternal(graph, globals).addParallelStep(step).go();
 
-    const expectedStdout: string[] = ["Done step1 in A", ""];
+    const expectedStdout: string[] = [`Done ${step.name} in A`, ""];
     const expectedStderr: string[] = [];
 
     globals.validateOuput(expectedStdout, expectedStderr);
@@ -209,16 +186,14 @@ describe("output", () => {
       A: { location: "a", dependencies: [] },
     };
 
-    const tracingContext = makeTracingContext();
-    const { fn: run } = tracingContext.makeStep({ success: false });
+    const tracingContext = makeTestEnvironment();
+    const step = tracingContext.makeStep({ success: false });
 
     const globals = getGlobals();
-    await createPipeline(graph, globals)
-      .addStep({ name: "step1", type: "parallel", run })
-      .go();
+    await createPipelineInternal(graph, globals).addParallelStep(step).go();
 
     const expectedStdout: string[] = [];
-    const expectedStderr: string[] = ["Failed step1 in A", ""];
+    const expectedStderr: string[] = [`Failed ${step.name} in A`, ``];
 
     globals.validateOuput(expectedStdout, expectedStderr);
   });
@@ -228,22 +203,24 @@ describe("output", () => {
       A: { location: "a", dependencies: [] },
     };
 
-    const tracingContext = makeTracingContext();
-    const { fn: run, name } = tracingContext.makeStep({
-      throws: true,
+    const tracingContext = makeTestEnvironment();
+    const step = tracingContext.makeStep({
+      success: new Error("failing miserably"),
+      stderr: "step stderr",
+      stdout: "step stdout",
     });
 
     const globals = getGlobals();
-    await createPipeline(graph, globals)
-      .addStep({ name, type: "parallel", run })
-      .go();
+    await createPipelineInternal(graph, globals).addParallelStep(step).go();
 
     const expectedStderr: string[] = [
-      ` / Failed ${name} in A`,
+      ` / Failed ${step.name} in A`,
+      ` | STDOUT`,
+      ` |  | step stdout`,
       ` | STDERR`,
-      ` |  | task-scheduler: the step ${name} failed with the following message in a:`,
-      ` |  | stack trace for following error: error has been thrown in ${name} for /a`,
-      ` \\ Failed ${name} in A`,
+      ` |  | step stderr`,
+      ` |  | stack trace for following error: failing miserably`,
+      ` \\ Failed ${step.name} in A`,
       ``,
     ];
     const expectedStdout: string[] = [];
@@ -256,28 +233,31 @@ describe("output", () => {
       A: { location: "a", dependencies: [] },
     };
 
-    const tracingContext = makeTracingContext();
-    const { fn: run } = tracingContext.makeStep({ stdout: "step1 stdout" });
-    const { fn: lint } = tracingContext.makeStep({ stdout: "step2 stdout" });
+    const tracingContext = makeTestEnvironment();
+    const step1 = tracingContext.makeStep({
+      stdout: "step1 stdout",
+    });
+    const step2 = tracingContext.makeStep({
+      stdout: "step2 stdout",
+    });
 
     const globals = getGlobals();
-
-    await createPipeline(graph, globals)
-      .addStep({ name: "step1", type: "topological", run })
-      .addStep({ name: "step2", type: "topological", run: lint })
+    await createPipelineInternal(graph, globals)
+      .addParallelStep(step1)
+      .addTopologicalStep(step2)
       .go();
 
     const expectedStdout: string[] = [
-      " / Done step1 in A",
-      " | STDOUT",
-      " |  | step1 stdout",
-      " \\ Done step1 in A",
-      "",
-      " / Done step2 in A",
-      " | STDOUT",
-      " |  | step2 stdout",
-      " \\ Done step2 in A",
-      "",
+      ` / Done ${step1.name} in A`,
+      ` | STDOUT`,
+      ` |  | step1 stdout`,
+      ` \\ Done ${step1.name} in A`,
+      ``,
+      ` / Done ${step2.name} in A`,
+      ` | STDOUT`,
+      ` |  | step2 stdout`,
+      ` \\ Done ${step2.name} in A`,
+      ``,
     ];
     const expectedStderr: string[] = [];
 
@@ -290,39 +270,39 @@ describe("output", () => {
       B: { location: "b", dependencies: [] },
     };
 
-    const run = jest.fn((cwd) => {
+    const run = (cwd: string): RunResult => {
       if (cwd === "/a") {
-        return Promise.resolve({
-          success: true,
-          stdout: "step1 stdout",
-          stderr: "",
-        });
+        return {
+          promise: Promise.resolve(true),
+          stdout: createReadStream("step1 stdout"),
+          stderr: createReadStream(""),
+        };
       } else {
-        return Promise.resolve({
-          success: false,
-          stdout: "",
-          stderr: "step1 failed",
-        });
+        return {
+          promise: Promise.resolve(false),
+          stdout: createReadStream(""),
+          stderr: createReadStream("step1 failed"),
+        };
       }
-    });
+    };
 
     const globals = getGlobals(true);
 
-    await createPipeline(graph, globals)
-      .addStep({ name: "step1", type: "parallel", run })
+    await createPipelineInternal(graph, globals)
+      .addParallelStep({ name: "step1", run })
       .go();
 
     const expectedStdout: string[] = [
-      " / Done step1 in A",
-      " | STDOUT",
-      " |  | step1 stdout",
-      " \\ Done step1 in A",
-      "",
-      " / Failed step1 in B",
-      " | STDERR",
-      " |  | step1 failed",
-      " \\ Failed step1 in B",
-      "",
+      ` / Done step1 in A`,
+      ` | STDOUT`,
+      ` |  | step1 stdout`,
+      ` \\ Done step1 in A`,
+      ``,
+      ` / Failed step1 in B`,
+      ` | STDERR`,
+      ` |  | step1 failed`,
+      ` \\ Failed step1 in B`,
+      ``,
     ];
 
     globals.validateOuput(expectedStdout, expectedStdout);
@@ -378,40 +358,47 @@ function getGlobals(stdoutAsStderr = false): TestingGlobals {
 }
 
 type StepResult = {
-  throws?: boolean;
-  success?: boolean;
+  success: true | false | Error;
+  stdout: string;
+  stderr: string;
+};
+
+type StepResultOverride = {
+  success?: true | false | Error;
   stdout?: string;
   stderr?: string;
 };
 
-type StepMock = {
-  fn: () => Promise<Result>;
-  name: string;
+type StepMock = Step & {
   started: (cwd: string) => string;
   finished: (cwd: string) => string;
 };
 
-function makeTracingContext(): {
+function createReadStream(content: string): Readable {
+  const tmpFile = tempy.file();
+  fs.writeFileSync(tmpFile, content);
+  return fs.createReadStream(tmpFile);
+}
+
+function makeTestEnvironment(): {
   logs: string[];
-  makeStep: (options?: StepResult) => StepMock;
+  makeStep: (desiredResult?: StepResultOverride) => StepMock;
 } {
   const logs: string[] = [];
   return {
     logs,
-    makeStep(options?: StepResult): StepMock {
+    makeStep(desiredResult?: StepResultOverride): StepMock {
       const name = Math.random().toString(36);
-      const _throws =
-        options && typeof options.throws === "boolean" ? options.throws : false;
-      const _success =
-        options && typeof options.success === "boolean"
-          ? options.success
-          : true;
-      const _stdout =
-        options && typeof options.stdout === "string" ? options.stdout : "";
-      const _stderr =
-        options && typeof options.stderr === "string" ? options.stderr : "";
+      const defaultResult: StepResult = {
+        success: true,
+        stdout: "",
+        stderr: "",
+      };
 
-      const run = jest.fn();
+      const result = desiredResult
+        ? { ...defaultResult, ...desiredResult }
+        : defaultResult;
+
       const messages = {
         started(cwd: string): string {
           return `called ${name} for ${cwd}`;
@@ -420,21 +407,31 @@ function makeTracingContext(): {
           return `finished ${name} for ${cwd}`;
         },
       };
-      run.mockImplementation((cwd) => {
-        if (_throws) {
-          throw new Error(`error has been thrown in ${name} for ${cwd}`);
-        }
 
+      const stdout = createReadStream(result.stdout);
+      const stderr = createReadStream(result.stderr);
+
+      const run = (cwd: string): RunResult => {
         logs.push(messages.started(cwd));
-        return new Promise<Result>((resolve) => {
-          setTimeout(() => {
-            logs.push(messages.finished(cwd));
-            resolve({ success: _success, stdout: _stdout, stderr: _stderr });
-          }, 50);
-        });
-      });
-      const result = { fn: run, ...messages, name };
-      return result;
+        return {
+          stdout,
+          stderr,
+          promise: new Promise<boolean>((resolve, reject) => {
+            if (typeof result.success === "object") {
+              setTimeout(() => {
+                reject(result.success);
+              }, 50);
+            } else {
+              setTimeout(() => {
+                logs.push(messages.finished(cwd));
+                resolve(result.success as boolean);
+              }, 50);
+            }
+          }),
+        };
+      };
+
+      return { run, name, ...messages };
     },
   };
 }
