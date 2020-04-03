@@ -13,25 +13,22 @@ Run a sequence of steps across all the packages of a monorepo.
 # Usage
 
 ```js
-const { createPipeline } = require("./scheduler");
+const { createPipeline } = require("@microsoft/task-scheduler");
 
 const graph = getDependencyGraph();
 
 // Defines a 3-steps pipeline.
 await createPipeline(graph)
-  .addStep({
+  .addTopologicalStep({
     name: "prepare",
-    type: "topological",
     run: prepare,
   })
-  .addStep({
+  .addTopologicalStep({
     name: "build",
-    type: "topological",
     run: build,
   })
-  .addStep({
+  .addParallelStep({
     name: "test",
-    type: "parallel",
     run: test,
   })
   .go();
