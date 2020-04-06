@@ -9,6 +9,7 @@ Run a sequence of steps across all the packages of a monorepo.
 - This tools optimizes CI builds performance by avoiding unnecessary waiting (see example below).
 - This tools has no dependencies and is very small.
 - Its interface makes it easy to compose with other tools to get fancy pipelines (eg. parallelization, profiling, throttling...)
+- Running the tasks on the main node process allows for cross-step in-memory memoization
 
 # Usage
 
@@ -33,15 +34,15 @@ await createPipeline(graph)
   })
   .go();
 
-async function prepare(cwd) {
+async function prepare(cwd, stdout, stderr) {
 ...
 }
 
-async function build(cwd) {
+async function build(cwd, stdout, stderr) {
 ...
 }
 
-async function test(cwd) {
+async function test(cwd, stdout, stderr) {
 ...
 }
 
