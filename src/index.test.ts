@@ -1,10 +1,7 @@
 import { EOL } from "os";
-import * as fs from "fs";
-import { Readable } from "stream";
+import { Writable } from "stream";
 import { createPipelineInternal, Globals } from "./pipeline";
-import { Step, RunResult } from "./publicInterfaces";
-
-const tempy = require("tempy");
+import { Step } from "./publicInterfaces";
 
 describe("task scheduling", () => {
   const graph = {
@@ -270,19 +267,17 @@ describe("output", () => {
       B: { location: "b", dependencies: [] },
     };
 
-    const run = (cwd: string): RunResult => {
+    const run = async (
+      cwd: string,
+      stdout: Writable,
+      stderr: Writable
+    ): Promise<boolean> => {
       if (cwd === "/a") {
-        return {
-          promise: Promise.resolve(true),
-          stdout: createReadStream("step1 stdout"),
-          stderr: createReadStream(""),
-        };
+        stdout.write(`step1 stdout${EOL}`);
+        return true;
       } else {
-        return {
-          promise: Promise.resolve(false),
-          stdout: createReadStream(""),
-          stderr: createReadStream("step1 failed"),
-        };
+        stderr.write(`step1 failed${EOL}`);
+        return false;
       }
     };
 
@@ -374,10 +369,8 @@ type StepMock = Step & {
   finished: (cwd: string) => string;
 };
 
-function createReadStream(content: string): Readable {
-  const tmpFile = tempy.file();
-  fs.writeFileSync(tmpFile, content);
-  return fs.createReadStream(tmpFile);
+async function wait(): Promise<void> {
+  return new Promise<void>((resolve) => setTimeout(resolve, 50));
 }
 
 function makeTestEnvironment(): {
@@ -408,27 +401,22 @@ function makeTestEnvironment(): {
         },
       };
 
-      const stdout = createReadStream(result.stdout);
-      const stderr = createReadStream(result.stderr);
-
-      const run = (cwd: string): RunResult => {
+      const run = async (
+        cwd: string,
+        stdout: Writable,
+        stderr: Writable
+      ): Promise<boolean> => {
         logs.push(messages.started(cwd));
-        return {
-          stdout,
-          stderr,
-          promise: new Promise<boolean>((resolve, reject) => {
-            if (typeof result.success === "object") {
-              setTimeout(() => {
-                reject(result.success);
-              }, 50);
-            } else {
-              setTimeout(() => {
-                logs.push(messages.finished(cwd));
-                resolve(result.success as boolean);
-              }, 50);
-            }
-          }),
-        };
+        stdout.write(result.stdout);
+        stderr.write(result.stderr);
+        await wait();
+        if (typeof result.success === "object") {
+          logs.push(messages.finished(cwd));
+          throw result.success;
+        } else {
+          logs.push(messages.finished(cwd));
+          return result.success;
+        }
       };
 
       return { run, name, ...messages };

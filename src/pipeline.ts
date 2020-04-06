@@ -1,6 +1,7 @@
 import * as path from "path";
 import { EOL } from "os";
-import { Readable } from "stream";
+import { Writable } from "stream";
+import * as streams from "memory-streams";
 
 import { Step, Graph, Pipeline } from "./publicInterfaces";
 
@@ -159,48 +160,29 @@ async function go(
 
 type StepResult = {
   success: boolean;
-  stderr: string[];
-  stdout: string[];
+  stderr: string;
+  stdout: string;
 };
 
 async function runAndCollectLogs(
-  runner: () => {
-    stdout: Readable;
-    stderr: Readable;
-    promise: Promise<boolean>;
-  },
+  runner: (stdout: Writable, stderr: Writable) => Promise<boolean>,
   globals: Globals
 ): Promise<StepResult> {
-  const stderr: string[] = [];
-  const stdout: string[] = [];
-  let stdoutStream: Readable | undefined = undefined;
-  let stderrStream: Readable | undefined = undefined;
-  let promise: Promise<boolean> | undefined;
+  const stdout = new streams.WritableStream();
+  const stderr = new streams.WritableStream();
 
   try {
-    try {
-      const r = runner();
-      stdoutStream = r.stdout;
-      stderrStream = r.stderr;
-      promise = r.promise;
-    } catch (e) {
-      const exceptionMessage = globals.errorFormatter(e);
-      stderr.push(exceptionMessage);
-      return { success: false, stdout, stderr };
-    }
+    const success = await runner(stdout, stderr);
 
-    stdoutStream.on("data", (chunk) => {
-      stdout.push(chunk.toString());
-    });
-    stderrStream.on("data", (chunk) => {
-      stderr.push(chunk.toString());
-    });
-    const result = await promise;
-    return { success: result, stdout, stderr };
+    return { success, stdout: stdout.toString(), stderr: stderr.toString() };
   } catch (error) {
     const exceptionMessage = globals.errorFormatter(error);
-    stderr.push(exceptionMessage);
-    return { success: false, stdout, stderr };
+    stderr.write(EOL + exceptionMessage);
+    return {
+      success: false,
+      stdout: stdout.toString(),
+      stderr: stderr.toString(),
+    };
   }
 }
 
@@ -215,7 +197,8 @@ async function runAndLogStep(
   globals: Globals
 ): Promise<void> {
   const result = await runAndCollectLogs(
-    () => step.run(path.join(globals.cwd(), graph[p].location)),
+    (stdout: Writable, stderr: Writable) =>
+      step.run(path.join(globals.cwd(), graph[p].location), stdout, stderr),
     globals
   );
   await wait();
@@ -276,12 +259,12 @@ function formatOutput(result: StepResult): string {
   let message = "";
   if (result.stdout.length !== 0) {
     message += `STDOUT${EOL}`;
-    message += prefix(result.stdout.join(EOL), " | ");
+    message += prefix(result.stdout, " | ");
     message += `${EOL}`;
   }
   if (result.stderr.length !== 0) {
     message += `STDERR${EOL}`;
-    message += prefix(result.stderr.join(EOL), " | ");
+    message += prefix(result.stderr, " | ");
     message += `${EOL}`;
   }
   return message;
