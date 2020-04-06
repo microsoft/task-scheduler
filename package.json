@@ -2,12 +2,13 @@
   "name": "@microsoft/task-scheduler",
   "version": "1.0.0",
   "description": "Schedule tasks in a monorepo",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
+  "typings": "lib/index.d.ts",
   "repository": "git@github.com:microsoft/task-scheduler.git",
   "author": "Vincent Bailly <vibailly@tuta.io>",
   "license": "MIT",
   "scripts": {
-    "build": "tsc && jest",
+    "build": "tsc && jest && webpack",
     "lint": "eslint --fix . --ext .ts",
     "prepublishOnly": "eslint . --ext .ts && tsc && jest"
   },
@@ -25,6 +26,9 @@
     "lint-staged": "^10.1.1",
     "prettier": "^2.0.2",
     "ts-jest": "^25.3.0",
+    "memory-streams": "^0.1.3",
+    "webpack": "^4.42.1",
+    "webpack-cli": "^3.3.11",
     "typescript": "^3.8.3"
   },
   "husky": {
@@ -41,8 +45,5 @@
       "eslint --fix",
       "git add"
     ]
-  },
-  "dependencies": {
-    "memory-streams": "^0.1.3"
   }
 }
