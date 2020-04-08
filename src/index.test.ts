@@ -9,7 +9,7 @@ describe("task scheduling", () => {
     B: { location: "b", dependencies: [] },
   };
 
-  test("tological steps wait for dependencies to be done", async () => {
+  test("topological steps wait for dependencies to be done", async () => {
     const tracingContext = makeTestEnvironment();
     const step = tracingContext.makeStep();
 
@@ -27,7 +27,7 @@ describe("task scheduling", () => {
     expected.forEach((e, i) => expect(e).toBe(tracingContext.logs[i]));
   });
 
-  test("parallel steps dont wait for dependencies to be done", async () => {
+  test("parallel steps don't wait for dependencies to be done", async () => {
     const tracingContext = makeTestEnvironment();
     const step = tracingContext.makeStep();
 
@@ -45,7 +45,7 @@ describe("task scheduling", () => {
     expected.forEach((e, i) => expect(e).toBe(tracingContext.logs[i]));
   });
 
-  test("tological steps wait for the previous step", async () => {
+  test("topological steps wait for the previous step", async () => {
     const tracingContext = makeTestEnvironment();
     const step1 = tracingContext.makeStep();
     const step2 = tracingContext.makeStep();
@@ -314,6 +314,7 @@ type TestingGlobals = Globals & {
 function getGlobals(stdoutAsStderr = false): TestingGlobals {
   const _stdout: string[] = [];
   const _stderr: string[] = stdoutAsStderr ? _stdout : [];
+
   let _exitCode = 0;
 
   return {
@@ -410,11 +411,10 @@ function makeTestEnvironment(): {
         stdout.write(result.stdout);
         stderr.write(result.stderr);
         await wait();
+        logs.push(messages.finished(cwd));
         if (typeof result.success === "object") {
-          logs.push(messages.finished(cwd));
           throw result.success;
         } else {
-          logs.push(messages.finished(cwd));
           return result.success;
         }
       };
