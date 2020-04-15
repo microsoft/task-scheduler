@@ -6,8 +6,8 @@ Run a sequence of steps across all the packages of a monorepo.
 
 - This tool does not assume any workspace/package manager so it can be used on any JavaScript repository.
 - The steps run on the main thread, sparing the cost of spawning one process per step. If parallelization is needed, the implementation of the steps can spawn processes.
-- This tools optimizes CI builds performance by avoiding unnecessary waiting (see example below).
-- This tools has no dependencies and is very small.
+- This tool optimizes CI builds performance by avoiding unnecessary waiting (see example below).
+- This tool has no dependencies and is very small.
 - Its interface makes it easy to compose with other tools to get fancy pipelines (eg. parallelization, profiling, throttling...)
 - Running the tasks on the main node process allows for cross-step in-memory memoization
 
