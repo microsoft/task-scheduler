@@ -8,9 +8,10 @@
   "main": "dist/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc && jest && webpack",
+    "build": "tsc && webpack",
     "test": "jest",
-    "lint": "eslint --fix . --ext .ts",
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint --fix . --ext .ts",
     "prepublishOnly": "eslint . --ext .ts && tsc && jest"
   },
   "husky": {
