@@ -1,5 +1,5 @@
-import { Logger, TaskResult } from "./types";
 import { EOL } from "os";
+import { Logger, TaskResult } from "./types";
 
 /*
  * Ouptut to console the result of a task.

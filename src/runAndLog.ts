@@ -1,10 +1,12 @@
-import { EOL } from "os";
-import { formatOutput, outputResult } from "./output";
-import { Globals } from "./publicInterfaces";
-import { TopologicalGraph, Task } from "./types";
-import { Writable } from "stream";
 import * as path from "path";
+import { EOL } from "os";
+import { Writable } from "stream";
 import * as streams from "memory-streams";
+
+import { Task, TopologicalGraph } from "./types";
+import { formatOutput, outputResult } from "./output";
+
+import { Globals } from "./publicInterfaces";
 
 type TaskResult = {
   success: boolean;

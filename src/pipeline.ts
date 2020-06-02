@@ -1,10 +1,11 @@
-import { generateTaskGraph } from "./generateTaskGraph";
-import { getPackageTaskFromId } from "./taskId";
-import { Pipeline, Globals } from "./publicInterfaces";
-import { runAndLog } from "./runAndLog";
-import { Tasks, TopologicalGraph, PackageTasks, Task } from "./types";
 import pGraph from "p-graph";
+
+import { generateTaskGraph } from "./generateTaskGraph";
 import { outputResult } from "./output";
+import { Globals, Pipeline } from "./publicInterfaces";
+import { runAndLog } from "./runAndLog";
+import { getPackageTaskFromId } from "./taskId";
+import { PackageTasks, Task, Tasks, TopologicalGraph } from "./types";
 
 const defaultGlobals: Globals = {
   logger: console,
@@ -71,7 +72,8 @@ export function createPipelineInternal(
         package: string;
         message: string;
       }[] = [];
-      let bail: boolean = false;
+
+      let bail = false;
 
       const packageTasks: PackageTasks = new Map();
 
@@ -83,9 +85,9 @@ export function createPipelineInternal(
             if (taskName === "") {
               packageTasks.set(taskId, () => Promise.resolve());
             } else {
-              const task = tasks.get(taskName);
+              const task = tasks.get(taskName)!;
               packageTasks.set(taskId, () =>
-                execute(globals, graph, task!, pkg, () => bail).catch(
+                execute(globals, graph, task, pkg, () => bail).catch(
                   (error: {
                     task: string;
                     package: string;

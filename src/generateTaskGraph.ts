@@ -1,5 +1,5 @@
-import { TopologicalGraph, Tasks, TaskId, PackageTaskDeps } from "./types";
 import { getTaskId, getPackageTaskFromId } from "./taskId";
+import { TopologicalGraph, Tasks, TaskId, PackageTaskDeps } from "./types";
 
 export function generateTaskGraph(
   scope: string[],
