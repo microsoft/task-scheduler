@@ -16,8 +16,9 @@ Run a sequence of steps across all the packages of a monorepo.
 ```js
 const { createPipeline } = require("@microsoft/task-scheduler");
 
-// this graph describes a topological graph, e.g. package dependencies
-const graph = getDependencyGraph(); // e.g. { foo: {location: 'packages/foo', dependencies: ['bar']}, bar: { ... }}
+// this graph describes a topological graph
+// e.g. {foo: {location: 'packages/foo', dependencies: ['bar']}, bar: { ... }}
+const graph = getDependencyGraph();
 
 const pipeline = await createPipeline(graph)
   // defining a task with NO task dependencies
@@ -65,14 +66,32 @@ async function bundle(cwd, stdout, stderr) {
 
 ```
 
+A `Task` is described by this:
+
+```ts
+type Task = {
+  /** name of the task */
+  name: string;
+
+  /** a function that gets invoked by the task-scheduler */
+  run: (cwd: string, stdout: Writable, stderr: Writable) => Promise<boolean>;
+
+  /** dependencies between tasks within the same package (e.g. `build` -> `test`) */
+  deps?: string[];
+
+  /** dependencies across packages within the same topological graph (e.g. parent `build` -> child `build`) */
+  topoDeps?: string[];
+};
+```
+
 Here is how the tasks defined above would run on a repo which has two packages A and B, A depending on B:
 
 ```
 
 A:            [-prepare-]         [------build------] [----test----]
-
+                                                      [-----bundle-----]
 B: [-prepare-] [------build------] [----test----]
-
+                                   [-----bundle-----]
 ----------> time
 ```
 
@@ -80,9 +99,9 @@ Here is how the same workflow would be executed by using lerna:
 
 ```
 
-A:            [-prepare-]                   [------build------] [----test----]
+A:            [-prepare-]                   [------build------] [----test----][-----bundle-----]
 
-B: [-prepare-]           [------build------]                    [----test----]
+B: [-prepare-]           [------build------]                    [----test----][-----bundle-----]
 
 ----------> time
 ```

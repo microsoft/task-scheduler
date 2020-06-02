@@ -7,9 +7,16 @@ export type TopologicalGraph = {
 };
 
 export type Task = {
+  /** name of the task */
   name: string;
+
+  /** a function that gets invoked by the task-scheduler */
   run: (cwd: string, stdout: Writable, stderr: Writable) => Promise<boolean>;
+
+  /** dependencies between tasks within the same package (e.g. `build` -> `test`) */
   deps?: string[];
+
+  /** dependencies across packages within the same topological graph (e.g. parent `build` -> child `build`) */
   topoDeps?: string[];
 };
 
