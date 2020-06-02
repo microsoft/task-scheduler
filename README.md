@@ -16,23 +16,36 @@ Run a sequence of steps across all the packages of a monorepo.
 ```js
 const { createPipeline } = require("@microsoft/task-scheduler");
 
-const graph = getDependencyGraph();
+// this graph describes a topological graph, e.g. package dependencies
+const graph = getDependencyGraph(); // e.g. { foo: {location: 'packages/foo', dependencies: ['bar']}, bar: { ... }}
 
-// Defines a 3-steps pipeline.
-await createPipeline(graph)
-  .addTopologicalStep({
+const pipeline = await createPipeline(graph)
+  // defining a task with NO task dependencies
+  .addTask({
     name: "prepare",
-    run: prepare,
+    run: prepare
   })
-  .addTopologicalStep({
+  // defining a task with task dependencies as well as the topological deps
+  .addTask({
     name: "build",
     run: build,
+    deps: ["prepare"],
+    topoDeps: ["build"]
   })
-  .addParallelStep({
+  .addTask({
     name: "test",
     run: test,
+    deps: ["build"]
   })
-  .go();
+  .addTask({
+    name: "bundle",
+    run: bundle,
+    deps: ["build"]
+  })
+  // allow here to scope the pipeline run - think of this as a way to use entry points to pick out the task graph for a traversal of task deps
+  .scope(["foo", "bar"])
+  // specify which of the tasks to run
+  .go(["test", "bundle"]);
 
 async function prepare(cwd, stdout, stderr) {
 ...
@@ -46,10 +59,14 @@ async function test(cwd, stdout, stderr) {
 ...
 }
 
+async function bundle(cwd, stdout, stderr) {
+...
+}
+
 ```
 
-
 Here is how the tasks defined above would run on a repo which has two packages A and B, A depending on B:
+
 ```
 
 A:            [-prepare-]         [------build------] [----test----]
@@ -60,6 +77,7 @@ B: [-prepare-] [------build------] [----test----]
 ```
 
 Here is how the same workflow would be executed by using lerna:
+
 ```
 
 A:            [-prepare-]                   [------build------] [----test----]
@@ -71,7 +89,7 @@ B: [-prepare-]           [------build------]                    [----test----]
 
 # Contributing
 
-This project welcomes contributions and suggestions.  Most contributions require you to agree to a
+This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
 the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
 

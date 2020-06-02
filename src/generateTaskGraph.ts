@@ -25,8 +25,6 @@ export function generateTaskGraph(
 
     if (!visited.has(taskId) && tasks.has(taskName)) {
       visited.add(taskId);
-
-      // get pipeline
       const task = tasks.get(taskName)!;
       const toTaskId = getTaskId(pkg, taskName);
 
