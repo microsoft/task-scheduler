@@ -9,6 +9,7 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "build": "tsc && jest && webpack",
+    "test": "jest",
     "lint": "eslint --fix . --ext .ts",
     "prepublishOnly": "eslint . --ext .ts && tsc && jest"
   },
