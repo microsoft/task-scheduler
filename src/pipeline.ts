@@ -1,8 +1,10 @@
-import { Tasks, TopologicalGraph, PackageTasks } from "./types";
-import { Pipeline, Globals } from "./publicInterfaces";
 import { generateTaskGraph } from "./generateTaskGraph";
 import { getPackageTaskFromId } from "./taskId";
+import { Pipeline, Globals } from "./publicInterfaces";
+import { runAndLog } from "./runAndLog";
+import { Tasks, TopologicalGraph, PackageTasks, Task } from "./types";
 import pGraph from "p-graph";
+import { outputResult } from "./output";
 
 const defaultGlobals: Globals = {
   logger: console,
@@ -17,11 +19,33 @@ const defaultGlobals: Globals = {
   },
 };
 
+async function execute(
+  globals: Globals,
+  graph: TopologicalGraph,
+  task: Task,
+  pkg: string,
+  shouldBail: () => boolean
+): Promise<void> {
+  if (shouldBail()) {
+    return;
+  }
+
+  try {
+    return await runAndLog(task, graph, pkg, globals);
+  } catch (error) {
+    throw {
+      task: task.name,
+      package: pkg,
+      message: error,
+    };
+  }
+}
+
 export function createPipelineInternal(
   graph: TopologicalGraph,
   globals: Globals,
-  tasks: Tasks,
-  scope: string[] = []
+  tasks: Tasks = new Map(),
+  scope?: string[]
 ): Pipeline {
   const pipeline: Pipeline = {
     addTask(task) {
@@ -32,31 +56,65 @@ export function createPipelineInternal(
       return createPipelineInternal(graph, globals, tasks, newScope);
     },
     async go(runTasks) {
+      if (typeof scope === "undefined") {
+        scope = Object.keys(graph);
+      }
+
+      if (typeof runTasks === "undefined") {
+        runTasks = [...tasks.keys()];
+      }
+
       const taskDeps = generateTaskGraph(scope, runTasks, tasks, graph);
+      const failures: {
+        task: string;
+        package: string;
+        message: string;
+      }[] = [];
+      let bail: boolean = false;
 
       const packageTasks: PackageTasks = new Map();
 
       for (const [from, to] of taskDeps) {
-        if (!packageTasks.has(from)) {
-          const [pkg, taskName] = getPackageTaskFromId(from);
-          const task = tasks.get(taskName);
-          const location = graph[pkg].location;
-          packageTasks.set(from, () => {
-            return task?.run(location, process.stdout, process.stderr)!;
-          });
-        }
+        for (const taskId of [from, to]) {
+          if (!packageTasks.has(taskId)) {
+            const [pkg, taskName] = getPackageTaskFromId(taskId);
 
-        if (!packageTasks.has(to)) {
-          const [pkg, taskName] = getPackageTaskFromId(to);
-          const task = tasks.get(taskName);
-          const location = graph[pkg].location;
-          packageTasks.set(to, () => {
-            return task?.run(location, process.stdout, process.stderr)!;
-          });
+            if (taskName === "") {
+              packageTasks.set(taskId, () => Promise.resolve());
+            } else {
+              const task = tasks.get(taskName);
+              packageTasks.set(taskId, () =>
+                execute(globals, graph, task!, pkg, () => bail).catch(
+                  (error: {
+                    task: string;
+                    package: string;
+                    message: string;
+                  }) => {
+                    bail = true;
+                    failures.push(error);
+                  }
+                )
+              );
+            }
+          }
         }
       }
 
-      await pGraph(packageTasks, taskDeps);
+      await pGraph(packageTasks, taskDeps).run();
+
+      if (failures.length > 0) {
+        failures.forEach((err) =>
+          outputResult(
+            err.message,
+            err.package,
+            err.task,
+            "failure",
+            globals.logger
+          )
+        );
+
+        globals.exit(1);
+      }
     },
   };
 

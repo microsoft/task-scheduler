@@ -5,7 +5,7 @@ export { Task, TopologicalGraph, Tasks } from "./types";
 export type Pipeline = {
   addTask: (task: Task) => Pipeline;
   scope: (scope: string[]) => Pipeline;
-  go: (tasks: string[]) => Promise<void>;
+  go: (tasks?: string[]) => Promise<void>;
 };
 
 export type Globals = {

@@ -25,3 +25,8 @@ export type Logger = {
   log(message: string): void;
   error(message: string): void;
 };
+export type TaskResult = {
+  success: boolean;
+  stderr: string;
+  stdout: string;
+};
