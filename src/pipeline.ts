@@ -44,27 +44,28 @@ async function execute(
 export function createPipelineInternal(
   graph: TopologicalGraph,
   globals: Globals,
-  tasks: Tasks = new Map(),
-  scope?: string[]
+  tasks: Tasks = new Map()
 ): Pipeline {
   const pipeline: Pipeline = {
     addTask(task) {
       tasks.set(task.name, task);
       return pipeline;
     },
-    scope(newScope) {
-      return createPipelineInternal(graph, globals, tasks, newScope);
-    },
-    async go(runTasks) {
-      if (typeof scope === "undefined") {
-        scope = Object.keys(graph);
+    async go(targets = {}) {
+      if (typeof targets.packages === "undefined") {
+        targets.packages = Object.keys(graph);
       }
 
-      if (typeof runTasks === "undefined") {
-        runTasks = [...tasks.keys()];
+      if (typeof targets.tasks === "undefined") {
+        targets.tasks = [...tasks.keys()];
       }
 
-      const taskDeps = generateTaskGraph(scope, runTasks, tasks, graph);
+      const taskDeps = generateTaskGraph(
+        targets.packages,
+        targets.tasks,
+        tasks,
+        graph
+      );
       const failures: {
         task: string;
         package: string;
@@ -122,5 +123,5 @@ export function createPipelineInternal(
 }
 
 export function createPipeline(graph: TopologicalGraph): Pipeline {
-  return createPipelineInternal(graph, defaultGlobals, new Map(), []);
+  return createPipelineInternal(graph, defaultGlobals, new Map());
 }

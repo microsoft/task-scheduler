@@ -43,10 +43,11 @@ const pipeline = await createPipeline(graph)
     run: bundle,
     deps: ["build"]
   })
-  // allow here to scope the pipeline run - think of this as a way to use entry points to pick out the task graph for a traversal of task deps
-  .scope(["foo", "bar"])
-  // specify which of the tasks to run
-  .go(["test", "bundle"]);
+  // you can call go() with no parameters to target everything, or specify which packages or tasks to target
+  .go({
+    packages: ["foo", "bar"],
+    tasks: ["test", "bundle"]
+  });
 
 async function prepare(cwd, stdout, stderr) {
 ...
