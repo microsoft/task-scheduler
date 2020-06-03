@@ -1,8 +1,0 @@
-{
-  "type": "patch",
-  "comment": "allow override of logger in task-scheduler",
-  "packageName": "@microsoft/task-scheduler",
-  "email": "kchau@microsoft.com",
-  "dependentChangeType": "patch",
-  "date": "2020-06-03T23:21:41.016Z"
-}
