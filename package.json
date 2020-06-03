@@ -13,6 +13,7 @@
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix . --ext .ts",
     "release": "beachball publish -y",
+    "change": "beachball change",
     "checkchange": "beachball check"
   },
   "husky": {
