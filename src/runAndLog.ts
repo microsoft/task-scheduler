@@ -48,7 +48,7 @@ export async function runAndLog(
 ): Promise<void> {
   const result = await runAndCollectLogs(
     (stdout: Writable, stderr: Writable) =>
-      task.run(path.join(globals.cwd(), graph[p].location), stdout, stderr),
+      task.run(path.join(globals.cwd(), graph[p].location), stdout, stderr, p),
     globals
   );
   await wait();
