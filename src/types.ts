@@ -11,7 +11,12 @@ export type Task = {
   name: string;
 
   /** a function that gets invoked by the task-scheduler */
-  run: (cwd: string, stdout: Writable, stderr: Writable) => Promise<boolean>;
+  run: (
+    cwd: string,
+    stdout: Writable,
+    stderr: Writable,
+    packageName: string
+  ) => Promise<boolean>;
 
   /** dependencies between tasks within the same package (e.g. `build` -> `test`) */
   deps?: string[];
