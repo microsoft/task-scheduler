@@ -1,0 +1,8 @@
+{
+  "type": "patch",
+  "comment": "adding beachball for releases and also adding an arg to the task run function to give more info to the consumers",
+  "packageName": "@microsoft/task-scheduler",
+  "email": "kchau@microsoft.com",
+  "dependentChangeType": "patch",
+  "date": "2020-06-03T20:44:02.772Z"
+}
