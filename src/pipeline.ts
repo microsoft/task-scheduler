@@ -124,6 +124,10 @@ export function createPipelineInternal(
   return pipeline;
 }
 
-export function createPipeline(graph: TopologicalGraph): Pipeline {
-  return createPipelineInternal(graph, defaultGlobals, new Map());
+export function createPipeline(
+  graph: TopologicalGraph,
+  options: Partial<Pick<Globals, "logger">> = {}
+): Pipeline {
+  const fullOptions: Globals = { ...defaultGlobals, ...options };
+  return createPipelineInternal(graph, fullOptions, new Map());
 }
