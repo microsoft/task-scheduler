@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Fri, 05 Jun 2020 16:18:43 GMT",
+      "tag": "@microsoft/task-scheduler_v2.1.2",
+      "version": "2.1.2",
+      "comments": {
+        "patch": [
+          {
+            "comment": "restore the webpacked output",
+            "author": "kchau@microsoft.com",
+            "commit": "34ef65fbf110d961d26c5496eb88e8b60ef23711",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 05 Jun 2020 16:06:20 GMT",
       "tag": "@microsoft/task-scheduler_v2.1.1",
       "version": "2.1.1",

@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Fri, 05 Jun 2020 16:06:20 GMT and should not be manually modified.
+This log was last generated on Fri, 05 Jun 2020 16:18:43 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.1.2
+
+Fri, 05 Jun 2020 16:18:43 GMT
+
+### Patches
+
+- restore the webpacked output (kchau@microsoft.com)
 
 ## 2.1.1
 
