@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Fri, 05 Jun 2020 15:53:52 GMT",
+      "tag": "@microsoft/task-scheduler_v2.1.0",
+      "version": "2.1.0",
+      "comments": {
+        "minor": [
+          {
+            "comment": "adding an override for exit() so consumers can handle the exits",
+            "author": "kchau@microsoft.com",
+            "commit": "c855019a0f8b018c02707f963f3e2d8a76bb7a54",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Wed, 03 Jun 2020 23:26:58 GMT",
       "tag": "@microsoft/task-scheduler_v2.0.2",
       "version": "2.0.2",
