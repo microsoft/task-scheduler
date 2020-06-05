@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Fri, 05 Jun 2020 15:53:52 GMT and should not be manually modified.
+This log was last generated on Fri, 05 Jun 2020 16:06:20 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.1.1
+
+Fri, 05 Jun 2020 16:06:20 GMT
+
+### Patches
+
+- fixes npmignore to include all the lib files (kchau@microsoft.com)
 
 ## 2.1.0
 

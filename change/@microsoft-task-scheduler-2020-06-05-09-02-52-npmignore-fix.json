@@ -1,8 +1,0 @@
-{
-  "type": "patch",
-  "comment": "fixes npmignore to include all the lib files",
-  "packageName": "@microsoft/task-scheduler",
-  "email": "kchau@microsoft.com",
-  "dependentChangeType": "patch",
-  "date": "2020-06-05T16:02:52.214Z"
-}
