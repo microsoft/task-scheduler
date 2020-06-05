@@ -1,5 +1,5 @@
 {
-  "type": "patch",
+  "type": "minor",
   "comment": "adding an override for exit() so consumers can handle the exits",
   "packageName": "@microsoft/task-scheduler",
   "email": "kchau@microsoft.com",
