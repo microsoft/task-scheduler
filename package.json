@@ -9,13 +9,13 @@
   "typings": "lib/index.d.ts",
   "scripts": {
     "build": "tsc && webpack",
-    "start": "tsc -w --preserveWatchOutput",
-    "test": "jest",
+    "change": "beachball change",
+    "checkchange": "beachball check",
     "lint": "eslint . --ext .ts",
     "lint:fix": "eslint --fix . --ext .ts",
     "release": "beachball publish -y",
-    "change": "beachball change",
-    "checkchange": "beachball check"
+    "start": "tsc -w --preserveWatchOutput",
+    "test": "jest"
   },
   "husky": {
     "hooks": {
@@ -52,5 +52,8 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
