@@ -26,8 +26,11 @@ async function runAndCollectLogs(
 
     return { success, stdout: stdout.toString(), stderr: stderr.toString() };
   } catch (error) {
-    const exceptionMessage = globals.errorFormatter(error);
-    stderr.write(EOL + exceptionMessage);
+    if (error) {
+      const exceptionMessage = globals.errorFormatter(error);
+      stderr.write(EOL + exceptionMessage);
+    }
+
     return {
       success: false,
       stdout: stdout.toString(),
