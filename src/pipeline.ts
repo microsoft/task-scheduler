@@ -126,7 +126,7 @@ export function createPipelineInternal(
 
 export function createPipeline(
   graph: TopologicalGraph,
-  options: Partial<Pick<Globals, "logger">> = {}
+  options: Partial<Pick<Globals, "logger" | "exit">> = {}
 ): Pipeline {
   const fullOptions: Globals = { ...defaultGlobals, ...options };
   return createPipelineInternal(graph, fullOptions, new Map());
