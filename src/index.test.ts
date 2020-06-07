@@ -1,7 +1,7 @@
 import { EOL } from "os";
 import { Writable } from "stream";
-import { createPipelineInternal, Globals } from "./pipeline";
-import { Step } from "./publicInterfaces";
+import { createPipelineInternal } from "./pipeline";
+import { Task, Globals } from "./publicInterfaces";
 
 describe("task scheduling", () => {
   const graph = {
@@ -11,17 +11,17 @@ describe("task scheduling", () => {
 
   test("topological steps wait for dependencies to be done", async () => {
     const tracingContext = makeTestEnvironment();
-    const step = tracingContext.makeStep();
+    const task = tracingContext.makeTask();
 
-    await createPipelineInternal(graph, getGlobals())
-      .addTopologicalStep(step)
-      .go();
+    task.topoDeps = [task.name];
+
+    await createPipelineInternal(graph, getGlobals()).addTask(task).go();
 
     const expected = [
-      step.started("/b"),
-      step.finished("/b"),
-      step.started("/a"),
-      step.finished("/a"),
+      task.started("/b"),
+      task.finished("/b"),
+      task.started("/a"),
+      task.finished("/a"),
     ];
 
     expected.forEach((e, i) => expect(e).toBe(tracingContext.logs[i]));
@@ -29,17 +29,15 @@ describe("task scheduling", () => {
 
   test("parallel steps don't wait for dependencies to be done", async () => {
     const tracingContext = makeTestEnvironment();
-    const step = tracingContext.makeStep();
+    const task = tracingContext.makeTask();
 
-    await createPipelineInternal(graph, getGlobals())
-      .addParallelStep(step)
-      .go();
+    await createPipelineInternal(graph, getGlobals()).addTask(task).go();
 
     const expected = [
-      step.started("/b"),
-      step.started("/a"),
-      step.finished("/b"),
-      step.finished("/a"),
+      task.started("/a"),
+      task.started("/b"),
+      task.finished("/a"),
+      task.finished("/b"),
     ];
 
     expected.forEach((e, i) => expect(e).toBe(tracingContext.logs[i]));
@@ -47,19 +45,21 @@ describe("task scheduling", () => {
 
   test("topological steps wait for the previous step", async () => {
     const tracingContext = makeTestEnvironment();
-    const step1 = tracingContext.makeStep();
-    const step2 = tracingContext.makeStep();
+    const task1 = tracingContext.makeTask();
+    const task2 = tracingContext.makeTask();
+
+    task2.deps = [task1.name];
 
     await createPipelineInternal(graph, getGlobals())
-      .addTopologicalStep(step1)
-      .addTopologicalStep(step2)
+      .addTask(task1)
+      .addTask(task2)
       .go();
 
     const expected = [
-      step1.started("/b"),
-      step1.finished("/b"),
-      step2.started("/b"),
-      step2.finished("/b"),
+      task1.started("/b"),
+      task1.finished("/b"),
+      task2.started("/b"),
+      task2.finished("/b"),
     ];
 
     expected.forEach((e, i) =>
@@ -69,21 +69,21 @@ describe("task scheduling", () => {
     );
   });
 
-  test("parallel steps wait for the previous step", async () => {
+  test("parallel steps run in parallel for same package", async () => {
     const tracingContext = makeTestEnvironment();
-    const step1 = tracingContext.makeStep();
-    const step2 = tracingContext.makeStep();
+    const task1 = tracingContext.makeTask();
+    const task2 = tracingContext.makeTask();
 
     await createPipelineInternal(graph, getGlobals())
-      .addParallelStep(step1)
-      .addParallelStep(step2)
+      .addTask(task1)
+      .addTask(task2)
       .go();
 
     const expected = [
-      step1.started("/b"),
-      step1.finished("/b"),
-      step2.started("/b"),
-      step2.finished("/b"),
+      task1.started("/b"),
+      task2.started("/b"),
+      task1.finished("/b"),
+      task2.finished("/b"),
     ];
 
     expected.forEach((e, i) =>
@@ -101,10 +101,10 @@ describe("failing steps", () => {
     };
 
     const tracingContext = makeTestEnvironment();
-    const step = tracingContext.makeStep({ success: false });
+    const step = tracingContext.makeTask({ success: false });
     const globals = getGlobals();
 
-    await createPipelineInternal(graph, globals).addParallelStep(step).go();
+    await createPipelineInternal(graph, globals).addTask(step).go();
 
     expect(globals.exitCode).toBe(1);
   });
@@ -115,19 +115,21 @@ describe("failing steps", () => {
     };
 
     const tracingContext = makeTestEnvironment();
-    const step1 = tracingContext.makeStep({ success: false });
-    const step2 = tracingContext.makeStep();
+    const task1 = tracingContext.makeTask({ success: false });
+    const task2 = tracingContext.makeTask();
+
+    task2.deps = [task1.name];
 
     await createPipelineInternal(graph, getGlobals())
-      .addParallelStep(step1)
-      .addParallelStep(step2)
+      .addTask(task1)
+      .addTask(task2)
       .go();
 
     expect(
-      tracingContext.logs.filter((l) => l.includes(step1.started("/a"))).length
+      tracingContext.logs.filter((l) => l.includes(task1.started("/a"))).length
     ).toBe(1);
     expect(
-      tracingContext.logs.filter((l) => l.includes(step2.started("/a"))).length
+      tracingContext.logs.filter((l) => l.includes(task2.started("/a"))).length
     ).toBe(0);
   });
 });
@@ -139,21 +141,21 @@ describe("output", () => {
     };
 
     const tracingContext = makeTestEnvironment();
-    const step = tracingContext.makeStep({
-      stdout: "step stdout",
-      stderr: "step stderr",
+    const task = tracingContext.makeTask({
+      stdout: "task stdout",
+      stderr: "task stderr",
     });
 
     const globals = getGlobals();
-    await createPipelineInternal(graph, globals).addParallelStep(step).go();
+    await createPipelineInternal(graph, globals).addTask(task).go();
 
     const expectedStdout: string[] = [
-      ` / Done ${step.name} in A`,
+      ` / Done ${task.name} in A`,
       ` | STDOUT`,
-      ` |  | step stdout`,
+      ` |  | task stdout`,
       ` | STDERR`,
-      ` |  | step stderr`,
-      ` \\ Done ${step.name} in A`,
+      ` |  | task stderr`,
+      ` \\ Done ${task.name} in A`,
       ``,
     ];
     const expectedStderr: string[] = [];
@@ -167,12 +169,12 @@ describe("output", () => {
     };
 
     const tracingContext = makeTestEnvironment();
-    const step = tracingContext.makeStep();
+    const task = tracingContext.makeTask();
 
     const globals = getGlobals();
-    await createPipelineInternal(graph, globals).addParallelStep(step).go();
+    await createPipelineInternal(graph, globals).addTask(task).go();
 
-    const expectedStdout: string[] = [`Done ${step.name} in A`, ""];
+    const expectedStdout: string[] = [`Done ${task.name} in A`, ""];
     const expectedStderr: string[] = [];
 
     globals.validateOuput(expectedStdout, expectedStderr);
@@ -184,13 +186,13 @@ describe("output", () => {
     };
 
     const tracingContext = makeTestEnvironment();
-    const step = tracingContext.makeStep({ success: false });
+    const task = tracingContext.makeTask({ success: false });
 
     const globals = getGlobals();
-    await createPipelineInternal(graph, globals).addParallelStep(step).go();
+    await createPipelineInternal(graph, globals).addTask(task).go();
 
     const expectedStdout: string[] = [];
-    const expectedStderr: string[] = [`Failed ${step.name} in A`, ``];
+    const expectedStderr: string[] = [`Failed ${task.name} in A`, ``];
 
     globals.validateOuput(expectedStdout, expectedStderr);
   });
@@ -201,23 +203,23 @@ describe("output", () => {
     };
 
     const tracingContext = makeTestEnvironment();
-    const step = tracingContext.makeStep({
+    const task = tracingContext.makeTask({
       success: new Error("failing miserably"),
-      stderr: "step stderr",
-      stdout: "step stdout",
+      stderr: "task stderr",
+      stdout: "task stdout",
     });
 
     const globals = getGlobals();
-    await createPipelineInternal(graph, globals).addParallelStep(step).go();
+    await createPipelineInternal(graph, globals).addTask(task).go();
 
     const expectedStderr: string[] = [
-      ` / Failed ${step.name} in A`,
+      ` / Failed ${task.name} in A`,
       ` | STDOUT`,
-      ` |  | step stdout`,
+      ` |  | task stdout`,
       ` | STDERR`,
-      ` |  | step stderr`,
+      ` |  | task stderr`,
       ` |  | stack trace for following error: failing miserably`,
-      ` \\ Failed ${step.name} in A`,
+      ` \\ Failed ${task.name} in A`,
       ``,
     ];
     const expectedStdout: string[] = [];
@@ -231,29 +233,31 @@ describe("output", () => {
     };
 
     const tracingContext = makeTestEnvironment();
-    const step1 = tracingContext.makeStep({
-      stdout: "step1 stdout",
+    const task1 = tracingContext.makeTask({
+      stdout: "task1 stdout",
     });
-    const step2 = tracingContext.makeStep({
-      stdout: "step2 stdout",
+    const task2 = tracingContext.makeTask({
+      stdout: "task2 stdout",
     });
+
+    task2.deps = [task1.name];
 
     const globals = getGlobals();
     await createPipelineInternal(graph, globals)
-      .addParallelStep(step1)
-      .addTopologicalStep(step2)
+      .addTask(task1)
+      .addTask(task2)
       .go();
 
     const expectedStdout: string[] = [
-      ` / Done ${step1.name} in A`,
+      ` / Done ${task1.name} in A`,
       ` | STDOUT`,
-      ` |  | step1 stdout`,
-      ` \\ Done ${step1.name} in A`,
+      ` |  | task1 stdout`,
+      ` \\ Done ${task1.name} in A`,
       ``,
-      ` / Done ${step2.name} in A`,
+      ` / Done ${task2.name} in A`,
       ` | STDOUT`,
-      ` |  | step2 stdout`,
-      ` \\ Done ${step2.name} in A`,
+      ` |  | task2 stdout`,
+      ` \\ Done ${task2.name} in A`,
       ``,
     ];
     const expectedStderr: string[] = [];
@@ -272,11 +276,11 @@ describe("output", () => {
       stdout: Writable,
       stderr: Writable
     ): Promise<boolean> => {
-      if (cwd === "/a") {
-        stdout.write(`step1 stdout${EOL}`);
+      if (cwd.replace(/\\/g, "/") === "/a") {
+        stdout.write(`task1 stdout${EOL}`);
         return true;
       } else {
-        stderr.write(`step1 failed${EOL}`);
+        stderr.write(`task1 failed${EOL}`);
         return false;
       }
     };
@@ -284,19 +288,19 @@ describe("output", () => {
     const globals = getGlobals(true);
 
     await createPipelineInternal(graph, globals)
-      .addParallelStep({ name: "step1", run })
+      .addTask({ name: "task1", run })
       .go();
 
     const expectedStdout: string[] = [
-      ` / Done step1 in A`,
+      ` / Done task1 in A`,
       ` | STDOUT`,
-      ` |  | step1 stdout`,
-      ` \\ Done step1 in A`,
+      ` |  | task1 stdout`,
+      ` \\ Done task1 in A`,
       ``,
-      ` / Failed step1 in B`,
+      ` / Failed task1 in B`,
       ` | STDERR`,
-      ` |  | step1 failed`,
-      ` \\ Failed step1 in B`,
+      ` |  | task1 failed`,
+      ` \\ Failed task1 in B`,
       ``,
     ];
 
@@ -321,8 +325,8 @@ function getGlobals(stdoutAsStderr = false): TestingGlobals {
     validateOuput(expectedStdout: string[], expectedStderr: string[]): void {
       expect(_stderr.length).toBe(expectedStderr.length);
       expect(_stdout.length).toBe(expectedStdout.length);
-      expectedStdout.forEach((m, i) => expect(m).toBe(_stdout[i]));
-      expectedStderr.forEach((m, i) => expect(m).toBe(_stderr[i]));
+      expectedStdout.forEach((m, i) => expect(_stdout[i]).toBe(m));
+      expectedStderr.forEach((m, i) => expect(_stderr[i]).toBe(m));
     },
     logger: {
       log(message: string): void {
@@ -353,19 +357,19 @@ function getGlobals(stdoutAsStderr = false): TestingGlobals {
   };
 }
 
-type StepResult = {
+type TaskResult = {
   success: true | false | Error;
   stdout: string;
   stderr: string;
 };
 
-type StepResultOverride = {
+type TaskResultOverride = {
   success?: true | false | Error;
   stdout?: string;
   stderr?: string;
 };
 
-type StepMock = Step & {
+type TaskMock = Task & {
   started: (cwd: string) => string;
   finished: (cwd: string) => string;
 };
@@ -376,14 +380,14 @@ async function wait(): Promise<void> {
 
 function makeTestEnvironment(): {
   logs: string[];
-  makeStep: (desiredResult?: StepResultOverride) => StepMock;
+  makeTask: (desiredResult?: TaskResultOverride) => TaskMock;
 } {
   const logs: string[] = [];
   return {
     logs,
-    makeStep(desiredResult?: StepResultOverride): StepMock {
+    makeTask(desiredResult?: TaskResultOverride): TaskMock {
       const name = Math.random().toString(36);
-      const defaultResult: StepResult = {
+      const defaultResult: TaskResult = {
         success: true,
         stdout: "",
         stderr: "",
@@ -395,10 +399,10 @@ function makeTestEnvironment(): {
 
       const messages = {
         started(cwd: string): string {
-          return `called ${name} for ${cwd}`;
+          return `called ${name} for ${cwd.replace(/\\/g, "/")}`;
         },
         finished(cwd: string): string {
-          return `finished ${name} for ${cwd}`;
+          return `finished ${name} for ${cwd.replace(/\\/g, "/")}`;
         },
       };
 
