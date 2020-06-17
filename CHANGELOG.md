@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Fri, 05 Jun 2020 16:18:43 GMT and should not be manually modified.
+This log was last generated on Wed, 17 Jun 2020 15:56:12 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.1.3
+
+Wed, 17 Jun 2020 15:56:12 GMT
+
+### Patches
+
+- adding public access since this is microsoft scoped; fix graph generation (kchau@microsoft.com)
 
 ## 2.1.2
 

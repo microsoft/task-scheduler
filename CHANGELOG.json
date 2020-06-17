@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Wed, 17 Jun 2020 15:56:12 GMT",
+      "tag": "@microsoft/task-scheduler_v2.1.3",
+      "version": "2.1.3",
+      "comments": {
+        "patch": [
+          {
+            "comment": "adding public access since this is microsoft scoped; fix graph generation",
+            "author": "kchau@microsoft.com",
+            "commit": "80db31bd1f02c191dc8626d610af56fc1035853a",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 05 Jun 2020 16:18:43 GMT",
       "tag": "@microsoft/task-scheduler_v2.1.2",
       "version": "2.1.2",
