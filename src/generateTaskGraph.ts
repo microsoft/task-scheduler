@@ -28,8 +28,11 @@ export function generateTaskGraph(
       const task = tasks.get(taskName)!;
       const toTaskId = getTaskId(pkg, taskName);
 
-      if (task.topoDeps) {
-        for (const from of task.topoDeps) {
+      const hasTopoDeps = task.topoDeps && task.topoDeps.length > 0;
+      const hasDeps = task.deps && task.deps.length > 0;
+
+      if (hasTopoDeps) {
+        for (const from of task.topoDeps!) {
           const depPkgs = graph[pkg].dependencies;
 
           if (depPkgs !== undefined) {
@@ -43,15 +46,15 @@ export function generateTaskGraph(
         }
       }
 
-      if (task.deps) {
-        for (const from of task.deps) {
+      if (hasDeps) {
+        for (const from of task.deps!) {
           const fromTaskId = getTaskId(pkg, from);
           taskDeps.push([fromTaskId, toTaskId]);
           traversalQueue.push(fromTaskId);
         }
       }
 
-      if (!task.deps && !task.topoDeps) {
+      if (!hasDeps && !hasTopoDeps) {
         const fromTaskId = getTaskId(pkg, "");
         taskDeps.push([fromTaskId, toTaskId]);
       }
