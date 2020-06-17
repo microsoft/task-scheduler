@@ -1,6 +1,6 @@
 {
   "type": "patch",
-  "comment": "adding public access since this is microsoft scoped",
+  "comment": "adding public access since this is microsoft scoped; fix graph generation",
   "packageName": "@microsoft/task-scheduler",
   "email": "kchau@microsoft.com",
   "dependentChangeType": "patch",
