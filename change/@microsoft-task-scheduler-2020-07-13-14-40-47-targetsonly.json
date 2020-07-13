@@ -1,8 +1,0 @@
-{
-  "type": "minor",
-  "comment": "adds a targets only mode",
-  "packageName": "@microsoft/task-scheduler",
-  "email": "kchau@microsoft.com",
-  "dependentChangeType": "patch",
-  "date": "2020-07-13T21:40:47.130Z"
-}

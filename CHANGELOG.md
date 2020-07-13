@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Wed, 17 Jun 2020 15:56:12 GMT and should not be manually modified.
+This log was last generated on Mon, 13 Jul 2020 22:28:02 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.2.0
+
+Mon, 13 Jul 2020 22:28:02 GMT
+
+### Minor changes
+
+- adds a targets only mode (kchau@microsoft.com)
 
 ## 2.1.3
 
