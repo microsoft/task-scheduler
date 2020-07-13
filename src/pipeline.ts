@@ -2,7 +2,7 @@ import pGraph from "p-graph";
 
 import { generateTaskGraph } from "./generateTaskGraph";
 import { outputResult } from "./output";
-import { Globals, Pipeline } from "./publicInterfaces";
+import { Globals, Pipeline, Options } from "./publicInterfaces";
 import { runAndLog } from "./runAndLog";
 import { getPackageTaskFromId } from "./taskId";
 import { PackageTasks, Task, Tasks, TopologicalGraph } from "./types";
@@ -18,6 +18,7 @@ const defaultGlobals: Globals = {
   errorFormatter(err: Error): string {
     return err.stack || err.message || err.toString();
   },
+  targetsOnly: false,
 };
 
 async function execute(
@@ -65,7 +66,8 @@ export function createPipelineInternal(
         targets.packages,
         targets.tasks,
         tasks,
-        graph
+        graph,
+        globals.targetsOnly
       );
       const failures: {
         task: string;
@@ -126,7 +128,7 @@ export function createPipelineInternal(
 
 export function createPipeline(
   graph: TopologicalGraph,
-  options: Partial<Pick<Globals, "logger" | "exit">> = {}
+  options: Options = {}
 ): Pipeline {
   const fullOptions: Globals = { ...defaultGlobals, ...options };
   return createPipelineInternal(graph, fullOptions, new Map());

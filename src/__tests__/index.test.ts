@@ -1,7 +1,7 @@
 import { EOL } from "os";
 import { Writable } from "stream";
-import { createPipelineInternal } from "./pipeline";
-import { Task, Globals } from "./publicInterfaces";
+import { createPipelineInternal } from "../pipeline";
+import { Task, Globals } from "../publicInterfaces";
 
 describe("task scheduling", () => {
   const graph = {
@@ -353,6 +353,7 @@ function getGlobals(stdoutAsStderr = false): TestingGlobals {
     errorFormatter(err: Error): string {
       return `stack trace for following error: ${err.message}`;
     },
+    targetsOnly: false,
   };
 }
 

@@ -12,4 +12,7 @@ export type Globals = {
   cwd(): string;
   exit(int: number): void;
   errorFormatter(err: Error): string;
+  targetsOnly: boolean;
 };
+
+export type Options = Partial<Pick<Globals, "logger" | "exit" | "targetsOnly">>;
