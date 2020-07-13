@@ -1,7 +1,7 @@
 import { EOL } from "os";
 import { Writable } from "stream";
-import { createPipelineInternal } from "./pipeline";
-import { Task, Globals } from "./publicInterfaces";
+import { createPipelineInternal } from "../pipeline";
+import { Task, Globals } from "../publicInterfaces";
 
 describe("task scheduling", () => {
   const graph = {
