@@ -353,6 +353,7 @@ function getGlobals(stdoutAsStderr = false): TestingGlobals {
     errorFormatter(err: Error): string {
       return `stack trace for following error: ${err.message}`;
     },
+    targetsOnly: false,
   };
 }
 
