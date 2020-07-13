@@ -5,7 +5,8 @@ export function generateTaskGraph(
   scope: string[],
   targets: string[],
   tasks: Tasks,
-  graph: TopologicalGraph
+  graph: TopologicalGraph,
+  targetsOnly: boolean
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
 
@@ -26,6 +27,12 @@ export function generateTaskGraph(
     if (!visited.has(taskId) && tasks.has(taskName)) {
       visited.add(taskId);
       const task = tasks.get(taskName)!;
+
+      // If we're in targetsOnly mode, make sure none of the non-targets are filtered out of task.deps
+      task.deps = targetsOnly
+        ? task.deps?.filter((d) => targets.indexOf(d) > -1)
+        : task.deps;
+
       const toTaskId = getTaskId(pkg, taskName);
 
       const hasTopoDeps = task.topoDeps && task.topoDeps.length > 0;
