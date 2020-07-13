@@ -1,5 +1,5 @@
 import { generateTaskGraph } from "../generateTaskGraph";
-import { Task, Tasks } from "../types";
+import { Tasks } from "../types";
 import { getPackageTaskFromId } from "../taskId";
 
 describe("generateTaskGraph", () => {
