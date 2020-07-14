@@ -1,11 +1,10 @@
-import pGraph from "p-graph";
-
+import pGraph, { PGraphNodeMap } from "p-graph";
 import { generateTaskGraph } from "./generateTaskGraph";
 import { outputResult } from "./output";
 import { Globals, Pipeline, Options } from "./publicInterfaces";
 import { runAndLog } from "./runAndLog";
 import { getPackageTaskFromId } from "./taskId";
-import { PackageTasks, Task, Tasks, TopologicalGraph } from "./types";
+import { Task, Tasks, TopologicalGraph } from "./types";
 
 const defaultGlobals: Globals = {
   logger: console,
@@ -77,7 +76,7 @@ export function createPipelineInternal(
 
       let bail = false;
 
-      const packageTasks: PackageTasks = new Map();
+      const packageTasks: PGraphNodeMap = new Map();
 
       for (const [from, to] of taskDeps) {
         for (const taskId of [from, to]) {
@@ -85,27 +84,31 @@ export function createPipelineInternal(
             const [pkg, taskName] = getPackageTaskFromId(taskId);
 
             if (taskName === "") {
-              packageTasks.set(taskId, () => Promise.resolve());
+              packageTasks.set(taskId, { run: () => Promise.resolve() });
             } else {
               const task = tasks.get(taskName)!;
-              packageTasks.set(taskId, () =>
-                execute(globals, graph, task, pkg, () => bail).catch(
-                  (error: {
-                    task: string;
-                    package: string;
-                    message: string;
-                  }) => {
-                    bail = true;
-                    failures.push(error);
-                  }
-                )
-              );
+              packageTasks.set(taskId, {
+                priority: task.priority,
+                run: () =>
+                  execute(globals, graph, task, pkg, () => bail).catch(
+                    (error: {
+                      task: string;
+                      package: string;
+                      message: string;
+                    }) => {
+                      bail = true;
+                      failures.push(error);
+                    }
+                  ),
+              });
             }
           }
         }
       }
 
-      await pGraph(packageTasks, taskDeps).run();
+      await pGraph(packageTasks, taskDeps).run({
+        concurrency: globals.concurrency,
+      });
 
       if (failures.length > 0) {
         failures.forEach((err) =>

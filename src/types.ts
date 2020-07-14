@@ -3,7 +3,10 @@ import { Writable } from "stream";
 export type Tasks = Map<string, Task>;
 
 export type TopologicalGraph = {
-  [name: string]: { location: string; dependencies: string[] };
+  [name: string]: {
+    location: string;
+    dependencies: string[];
+  };
 };
 
 export type Task = {
@@ -23,6 +26,9 @@ export type Task = {
 
   /** dependencies across packages within the same topological graph (e.g. parent `build` -> child `build`) */
   topoDeps?: string[];
+
+  /** An optional priority for this task. When maxConcurrency is set on a pipeline, unblocked tasks with a higher priority will be scheduled before lower priority tasks. */
+  priority?: number;
 };
 
 export interface PackageTask extends Task {
@@ -30,7 +36,6 @@ export interface PackageTask extends Task {
 }
 
 export type PackageTaskDeps = [string, string][];
-export type PackageTasks = Map<string, () => Promise<unknown>>;
 export type TaskId = string;
 
 export type Logger = {
