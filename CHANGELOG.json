@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Tue, 14 Jul 2020 22:29:27 GMT",
+      "tag": "@microsoft/task-scheduler_v2.3.0",
+      "version": "2.3.0",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Upgrade to latest p-graph and add support for task prioritization and maximum concurrency limiting",
+            "author": "1581488+christiango@users.noreply.github.com",
+            "commit": "3f986796095998a6313c4890f54816683147fc07",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 13 Jul 2020 22:28:02 GMT",
       "tag": "@microsoft/task-scheduler_v2.2.0",
       "version": "2.2.0",

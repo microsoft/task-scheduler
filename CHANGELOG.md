@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Mon, 13 Jul 2020 22:28:02 GMT and should not be manually modified.
+This log was last generated on Tue, 14 Jul 2020 22:29:27 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.3.0
+
+Tue, 14 Jul 2020 22:29:27 GMT
+
+### Minor changes
+
+- Upgrade to latest p-graph and add support for task prioritization and maximum concurrency limiting (1581488+christiango@users.noreply.github.com)
 
 ## 2.2.0
 
