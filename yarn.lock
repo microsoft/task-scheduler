@@ -4451,10 +4451,10 @@ p-finally@^2.0.0:
   resolved "https://registry.yarnpkg.com/p-finally/-/p-finally-2.0.1.tgz#bd6fcaa9c559a096b680806f4d657b3f0f240561"
   integrity sha512-vpm09aKwq6H9phqRQzecoDpD8TmVyGw70qmWlyq5onxY7tqyTTFVvxMykxQSQKILBSFlbXpypIw2T1Ml7+DDtw==
 
-p-graph@^0.4.1:
-  version "0.4.1"
-  resolved "https://registry.yarnpkg.com/p-graph/-/p-graph-0.4.1.tgz#7e21ecd25e1a21249f6f3c63f58621d0d61ba969"
-  integrity sha512-qIEIkdvF6e1q6mhigTISHSagUIDwM4smFXCM2P3uKLUJ/I+3oMTvQ4YQap8qFVxwNN6iaMo9xN27x7vnIGKngQ==
+p-graph@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/p-graph/-/p-graph-1.0.1.tgz#86b698e2f3a97dc08862b57975e504038848b205"
+  integrity sha512-IssDuszsMWk8J/SJ9k7KVZIIE6/3Nw4joHMp+GnpztNPsWv8rsJm5i3zmXalPJmYLjYQYZCmhOZveuP0kunAzA==
 
 p-is-promise@^2.0.0:
   version "2.1.0"

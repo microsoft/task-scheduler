@@ -1,0 +1,8 @@
+{
+  "type": "minor",
+  "comment": "Upgrade to latest p-graph and add support for task prioritization and maximum concurrency limiting",
+  "packageName": "@microsoft/task-scheduler",
+  "email": "1581488+christiango@users.noreply.github.com",
+  "dependentChangeType": "patch",
+  "date": "2020-07-14T21:49:02.952Z"
+}
