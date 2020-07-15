@@ -88,7 +88,7 @@ export function createPipelineInternal(
             } else {
               const task = tasks.get(taskName)!;
               packageTasks.set(taskId, {
-                priority: task.priority,
+                priority: task.priorities && task.priorities[pkg],
                 run: () =>
                   execute(globals, graph, task, pkg, () => bail).catch(
                     (error: {
