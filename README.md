@@ -83,8 +83,10 @@ type Task = {
   /** dependencies across packages within the same topological graph (e.g. parent `build` -> child `build`) */
   topoDeps?: string[];
 
-  /** An optional priority for this task. When maxConcurrency is set on a pipeline, unblocked tasks with a higher priority will be scheduled before lower priority tasks. */
-  priority?: number;
+  /** An optional priority to set for packages that have this task. Unblocked tasks with a higher priority will be scheduled before lower priority tasks. */
+  priorities?: {
+    [packageName: string]: number;
+  };
 };
 ```
 
