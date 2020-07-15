@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Wed, 15 Jul 2020 14:37:22 GMT",
+      "tag": "@microsoft/task-scheduler_v2.4.0",
+      "version": "2.4.0",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Change priority API to be package specific",
+            "author": "1581488+christiango@users.noreply.github.com",
+            "commit": "4a7ca2427e590b9005dd356afb55537540094cc9",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Tue, 14 Jul 2020 22:29:27 GMT",
       "tag": "@microsoft/task-scheduler_v2.3.0",
       "version": "2.3.0",

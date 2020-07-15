@@ -1,8 +1,0 @@
-{
-  "type": "minor",
-  "comment": "Change priority API to be package specific",
-  "packageName": "@microsoft/task-scheduler",
-  "email": "1581488+christiango@users.noreply.github.com",
-  "dependentChangeType": "patch",
-  "date": "2020-07-15T14:21:49.153Z"
-}

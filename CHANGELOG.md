@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Tue, 14 Jul 2020 22:29:27 GMT and should not be manually modified.
+This log was last generated on Wed, 15 Jul 2020 14:37:22 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.4.0
+
+Wed, 15 Jul 2020 14:37:22 GMT
+
+### Minor changes
+
+- Change priority API to be package specific (1581488+christiango@users.noreply.github.com)
 
 ## 2.3.0
 
