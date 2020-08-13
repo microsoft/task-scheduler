@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Wed, 15 Jul 2020 14:37:22 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Aug 2020 17:04:57 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.5.0
+
+Thu, 13 Aug 2020 17:04:57 GMT
+
+### Minor changes
+
+- exposes generateTaskGraph as well so it can be used as a separate library util to examine the task graph (kchau@microsoft.com)
 
 ## 2.4.0
 

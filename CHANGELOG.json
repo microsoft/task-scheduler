@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Thu, 13 Aug 2020 17:04:57 GMT",
+      "tag": "@microsoft/task-scheduler_v2.5.0",
+      "version": "2.5.0",
+      "comments": {
+        "minor": [
+          {
+            "comment": "exposes generateTaskGraph as well so it can be used as a separate library util to examine the task graph",
+            "author": "kchau@microsoft.com",
+            "commit": "37e919c3108f2c4bb4142f342b94bbab419fa67c",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Wed, 15 Jul 2020 14:37:22 GMT",
       "tag": "@microsoft/task-scheduler_v2.4.0",
       "version": "2.4.0",
