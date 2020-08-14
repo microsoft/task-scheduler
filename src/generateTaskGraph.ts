@@ -7,7 +7,7 @@ export function generateTaskGraph(
   tasks: Tasks,
   graph: TopologicalGraph,
   packageTaskDeps: PackageTaskDeps = [],
-  targetsOnly: boolean = false
+  targetsOnly = false
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
 
