@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Thu, 13 Aug 2020 17:04:57 GMT and should not be manually modified.
+This log was last generated on Fri, 14 Aug 2020 18:35:13 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.6.0
+
+Fri, 14 Aug 2020 18:35:13 GMT
+
+### Minor changes
+
+- Adds the ability to add an individual package task dependency (kchau@microsoft.com)
 
 ## 2.5.0
 

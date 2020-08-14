@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Fri, 14 Aug 2020 18:35:13 GMT",
+      "tag": "@microsoft/task-scheduler_v2.6.0",
+      "version": "2.6.0",
+      "comments": {
+        "minor": [
+          {
+            "comment": "Adds the ability to add an individual package task dependency",
+            "author": "kchau@microsoft.com",
+            "commit": "da65db7e2ae37285cd52711e0b892d7cf44c2dcd",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Thu, 13 Aug 2020 17:04:57 GMT",
       "tag": "@microsoft/task-scheduler_v2.5.0",
       "version": "2.5.0",
