@@ -11,6 +11,9 @@ export function generateTaskGraph(
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
 
+  // These are the manually added package task dependencies from "addDep()" API
+  const packageTaskDepsMap = getPackageTaskDepsMap(packageTaskDeps);
+
   const traversalQueue: TaskId[] = [];
 
   for (const pkg of scope) {
@@ -38,6 +41,7 @@ export function generateTaskGraph(
 
       const hasTopoDeps = task.topoDeps && task.topoDeps.length > 0;
       const hasDeps = task.deps && task.deps.length > 0;
+      const hasPackagetTaskDeps = packageTaskDepsMap.has(taskId);
 
       if (hasTopoDeps) {
         for (const from of task.topoDeps!) {
@@ -62,22 +66,30 @@ export function generateTaskGraph(
         }
       }
 
-      if (!hasDeps && !hasTopoDeps) {
+      if (hasPackagetTaskDeps) {
+        for (const fromTaskId of packageTaskDepsMap.get(taskId)!) {
+          taskDeps.push([fromTaskId, toTaskId]);
+          traversalQueue.push(fromTaskId);
+        }
+      }
+
+      if (!hasDeps && !hasTopoDeps && !hasPackagetTaskDeps) {
         const fromTaskId = getTaskId(pkg, "");
         taskDeps.push([fromTaskId, toTaskId]);
       }
     }
   }
 
-  // After the automated taskDeps from graph traversal, add in the manually added ones
-  // Make sure these are unique by using a Set
-  const key = (entry: [TaskId, TaskId]) => `${entry[0]}###${entry[1]}`;
-  const taskDepsSet = new Set(taskDeps.map((entry) => key(entry)));
-  for (const entry of packageTaskDeps) {
-    if (!taskDepsSet.has(key(entry))) {
-      taskDeps.push(entry);
-    }
-  }
-
   return taskDeps;
+}
+
+function getPackageTaskDepsMap(packageTaskDeps: PackageTaskDeps) {
+  const depMap = new Map<TaskId, TaskId[]>();
+  for (const [from, to] of packageTaskDeps) {
+    if (!depMap.has(to)) {
+      depMap.set(to, []);
+    }
+    depMap.get(to)!.push(from);
+  }
+  return depMap;
 }

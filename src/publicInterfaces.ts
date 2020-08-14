@@ -1,6 +1,6 @@
 import { Task, Logger, PackageTask } from "./types";
 
-export { Task, TopologicalGraph, Tasks } from "./types";
+export { Task, TopologicalGraph, Tasks, PackageTask } from "./types";
 
 export type Pipeline = {
   addTask: (task: Task) => Pipeline;
