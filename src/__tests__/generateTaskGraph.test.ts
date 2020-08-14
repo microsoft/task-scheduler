@@ -41,7 +41,7 @@ describe("generateTaskGraph", () => {
       ],
     ]);
 
-    const taskGraph = generateTaskGraph(scope, targets, tasks, graph, true);
+    const taskGraph = generateTaskGraph(scope, targets, tasks, graph, [], true);
     expect(taskGraph).toHaveLength(4);
 
     // None of the "from" taskId should contain "build" task
