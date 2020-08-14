@@ -33,10 +33,7 @@ export type Task = {
   };
 };
 
-export interface PackageTask extends Task {
-  package: string;
-}
-
+export type PackageTask = { package: string; task: string };
 export type PackageTaskDeps = [string, string][];
 export type TaskId = string;
 

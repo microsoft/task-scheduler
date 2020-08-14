@@ -6,9 +6,13 @@ export function generateTaskGraph(
   targets: string[],
   tasks: Tasks,
   graph: TopologicalGraph,
-  targetsOnly: boolean
+  packageTaskDeps: PackageTaskDeps = [],
+  targetsOnly = false
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
+
+  // These are the manually added package task dependencies from "addDep()" API
+  const packageTaskDepsMap = getPackageTaskDepsMap(packageTaskDeps);
 
   const traversalQueue: TaskId[] = [];
 
@@ -37,6 +41,7 @@ export function generateTaskGraph(
 
       const hasTopoDeps = task.topoDeps && task.topoDeps.length > 0;
       const hasDeps = task.deps && task.deps.length > 0;
+      const hasPackagetTaskDeps = packageTaskDepsMap.has(taskId);
 
       if (hasTopoDeps) {
         for (const from of task.topoDeps!) {
@@ -61,7 +66,14 @@ export function generateTaskGraph(
         }
       }
 
-      if (!hasDeps && !hasTopoDeps) {
+      if (hasPackagetTaskDeps) {
+        for (const fromTaskId of packageTaskDepsMap.get(taskId)!) {
+          taskDeps.push([fromTaskId, toTaskId]);
+          traversalQueue.push(fromTaskId);
+        }
+      }
+
+      if (!hasDeps && !hasTopoDeps && !hasPackagetTaskDeps) {
         const fromTaskId = getTaskId(pkg, "");
         taskDeps.push([fromTaskId, toTaskId]);
       }
@@ -69,4 +81,15 @@ export function generateTaskGraph(
   }
 
   return taskDeps;
+}
+
+function getPackageTaskDepsMap(packageTaskDeps: PackageTaskDeps) {
+  const depMap = new Map<TaskId, TaskId[]>();
+  for (const [from, to] of packageTaskDeps) {
+    if (!depMap.has(to)) {
+      depMap.set(to, []);
+    }
+    depMap.get(to)!.push(from);
+  }
+  return depMap;
 }
