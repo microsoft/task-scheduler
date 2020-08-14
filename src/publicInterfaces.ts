@@ -1,9 +1,10 @@
-import { Task, Logger } from "./types";
+import { Task, Logger, PackageTask } from "./types";
 
 export { Task, TopologicalGraph, Tasks } from "./types";
 
 export type Pipeline = {
   addTask: (task: Task) => Pipeline;
+  addDep: (from: PackageTask, to: PackageTask) => Pipeline;
   go: (targets?: { packages?: string[]; tasks?: string[] }) => Promise<void>;
 };
 

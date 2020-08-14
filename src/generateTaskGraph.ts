@@ -1,11 +1,18 @@
 import { getTaskId, getPackageTaskFromId } from "./taskId";
-import { TopologicalGraph, Tasks, TaskId, PackageTaskDeps } from "./types";
+import {
+  TopologicalGraph,
+  Tasks,
+  TaskId,
+  PackageTaskDeps,
+  PackageTask,
+} from "./types";
 
 export function generateTaskGraph(
   scope: string[],
   targets: string[],
   tasks: Tasks,
   graph: TopologicalGraph,
+  packageTaskDeps: PackageTaskDeps,
   targetsOnly: boolean
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
@@ -65,6 +72,16 @@ export function generateTaskGraph(
         const fromTaskId = getTaskId(pkg, "");
         taskDeps.push([fromTaskId, toTaskId]);
       }
+    }
+  }
+
+  // After the automated taskDeps from graph traversal, add in the manually added ones
+  // Make sure these are unique by using a Set
+  const key = (entry: [TaskId, TaskId]) => `${entry[0]}###${entry[1]}`;
+  const taskDepsSet = new Set(taskDeps.map((entry) => key(entry)));
+  for (const entry of packageTaskDeps) {
+    if (!taskDepsSet.has(key(entry))) {
+      taskDeps.push(entry);
     }
   }
 

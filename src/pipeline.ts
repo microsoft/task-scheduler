@@ -3,8 +3,14 @@ import { generateTaskGraph } from "./generateTaskGraph";
 import { outputResult } from "./output";
 import { Globals, Pipeline, Options } from "./publicInterfaces";
 import { runAndLog } from "./runAndLog";
-import { getPackageTaskFromId } from "./taskId";
-import { Task, Tasks, TopologicalGraph } from "./types";
+import { getPackageTaskFromId, getTaskId } from "./taskId";
+import {
+  Task,
+  Tasks,
+  TopologicalGraph,
+  PackageTaskDeps,
+  PackageTask,
+} from "./types";
 
 const defaultGlobals: Globals = {
   logger: console,
@@ -45,11 +51,19 @@ async function execute(
 export function createPipelineInternal(
   graph: TopologicalGraph,
   globals: Globals,
-  tasks: Tasks = new Map()
+  tasks: Tasks = new Map(),
+  packageTaskDeps: PackageTaskDeps = []
 ): Pipeline {
   const pipeline: Pipeline = {
     addTask(task) {
       tasks.set(task.name, task);
+      return pipeline;
+    },
+    addDep(from: PackageTask, to: PackageTask) {
+      packageTaskDeps.push([
+        getTaskId(from.package, from.task),
+        getTaskId(to.package, to.task),
+      ]);
       return pipeline;
     },
     async go(targets = {}) {
@@ -66,6 +80,7 @@ export function createPipelineInternal(
         targets.tasks,
         tasks,
         graph,
+        packageTaskDeps,
         globals.targetsOnly
       );
       const failures: {
@@ -134,5 +149,5 @@ export function createPipeline(
   options: Options = {}
 ): Pipeline {
   const fullOptions: Globals = { ...defaultGlobals, ...options };
-  return createPipelineInternal(graph, fullOptions, new Map());
+  return createPipelineInternal(graph, fullOptions, new Map(), []);
 }
