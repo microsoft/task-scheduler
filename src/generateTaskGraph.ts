@@ -12,8 +12,8 @@ export function generateTaskGraph(
   targets: string[],
   tasks: Tasks,
   graph: TopologicalGraph,
-  packageTaskDeps: PackageTaskDeps,
-  targetsOnly: boolean
+  packageTaskDeps: PackageTaskDeps = [],
+  targetsOnly: boolean = false
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
 
