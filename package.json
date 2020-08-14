@@ -5,7 +5,7 @@
   "repository": "git@github.com:microsoft/task-scheduler.git",
   "license": "MIT",
   "author": "Vincent Bailly <vibailly@tuta.io>",
-  "main": "lib/index.js",
+  "main": "dist/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "build": "tsc && webpack",
