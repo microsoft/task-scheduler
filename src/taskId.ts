@@ -1,6 +1,6 @@
 import { TaskId } from "./types";
 
-const DELIMITER = ":";
+const DELIMITER = "#";
 
 export function getTaskId(pkg: string, taskName: string): string {
   return `${pkg}${DELIMITER}${taskName}`;
