@@ -1,0 +1,8 @@
+{
+  "type": "patch",
+  "comment": "using a different delimiter to make it not conflict with lots of build scripts out there",
+  "packageName": "@microsoft/task-scheduler",
+  "email": "kchau@microsoft.com",
+  "dependentChangeType": "patch",
+  "date": "2020-08-16T16:25:23.763Z"
+}
