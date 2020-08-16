@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/task-scheduler",
-  "version": "2.6.0",
+  "version": "2.6.1",
   "description": "Schedule tasks in a monorepo",
   "repository": "git@github.com:microsoft/task-scheduler.git",
   "license": "MIT",

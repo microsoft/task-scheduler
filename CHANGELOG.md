@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Fri, 14 Aug 2020 18:35:13 GMT and should not be manually modified.
+This log was last generated on Sun, 16 Aug 2020 16:27:52 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.6.1
+
+Sun, 16 Aug 2020 16:27:52 GMT
+
+### Patches
+
+- using a different delimiter to make it not conflict with lots of build scripts out there (kchau@microsoft.com)
 
 ## 2.6.0
 

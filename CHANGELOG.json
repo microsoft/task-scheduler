@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Sun, 16 Aug 2020 16:27:52 GMT",
+      "tag": "@microsoft/task-scheduler_v2.6.1",
+      "version": "2.6.1",
+      "comments": {
+        "patch": [
+          {
+            "comment": "using a different delimiter to make it not conflict with lots of build scripts out there",
+            "author": "kchau@microsoft.com",
+            "commit": "c6803ba306f92b3028d7f5e237c289c4905d1532",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Fri, 14 Aug 2020 18:35:13 GMT",
       "tag": "@microsoft/task-scheduler_v2.6.0",
       "version": "2.6.0",
