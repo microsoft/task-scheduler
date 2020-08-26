@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Sun, 16 Aug 2020 16:27:52 GMT and should not be manually modified.
+This log was last generated on Wed, 26 Aug 2020 20:33:37 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.6.2
+
+Wed, 26 Aug 2020 20:33:37 GMT
+
+### Patches
+
+- make sure no-deps case is actually covered (kchau@microsoft.com)
 
 ## 2.6.1
 

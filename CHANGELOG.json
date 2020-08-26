@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Wed, 26 Aug 2020 20:33:37 GMT",
+      "tag": "@microsoft/task-scheduler_v2.6.2",
+      "version": "2.6.2",
+      "comments": {
+        "patch": [
+          {
+            "comment": "make sure no-deps case is actually covered",
+            "author": "kchau@microsoft.com",
+            "commit": "8a21c790f0e4e15750c4068e0c0478f7379ff052",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Sun, 16 Aug 2020 16:27:52 GMT",
       "tag": "@microsoft/task-scheduler_v2.6.1",
       "version": "2.6.1",
