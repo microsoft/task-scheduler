@@ -24,8 +24,6 @@ export function generateTaskGraph(
 
   const visited = new Set<TaskId>();
 
-  debugger;
-
   while (traversalQueue.length > 0) {
     const taskId = traversalQueue.shift()!;
     const [pkg, taskName] = getPackageTaskFromId(taskId);
