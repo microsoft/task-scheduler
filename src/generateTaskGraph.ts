@@ -24,6 +24,8 @@ export function generateTaskGraph(
 
   const visited = new Set<TaskId>();
 
+  debugger;
+
   while (traversalQueue.length > 0) {
     const taskId = traversalQueue.shift()!;
     const [pkg, taskName] = getPackageTaskFromId(taskId);
@@ -39,7 +41,11 @@ export function generateTaskGraph(
 
       const toTaskId = getTaskId(pkg, taskName);
 
-      const hasTopoDeps = task.topoDeps && task.topoDeps.length > 0;
+      const hasTopoDeps =
+        task.topoDeps &&
+        task.topoDeps.length > 0 &&
+        typeof graph[pkg].dependencies !== "undefined" &&
+        Object.keys(graph[pkg].dependencies).length > 0;
       const hasDeps = task.deps && task.deps.length > 0;
       const hasPackagetTaskDeps = packageTaskDepsMap.has(taskId);
 
@@ -47,13 +53,11 @@ export function generateTaskGraph(
         for (const from of task.topoDeps!) {
           const depPkgs = graph[pkg].dependencies;
 
-          if (depPkgs !== undefined) {
-            // add task dep from all the package deps within repo
-            for (const depPkg of depPkgs) {
-              const fromTaskId = getTaskId(depPkg, from);
-              taskDeps.push([fromTaskId, toTaskId]);
-              traversalQueue.push(fromTaskId);
-            }
+          // add task dep from all the package deps within repo
+          for (const depPkg of depPkgs) {
+            const fromTaskId = getTaskId(depPkg, from);
+            taskDeps.push([fromTaskId, toTaskId]);
+            traversalQueue.push(fromTaskId);
           }
         }
       }
