@@ -1,0 +1,8 @@
+{
+  "type": "patch",
+  "comment": "fix: Declare p-graph as a dependency",
+  "packageName": "@microsoft/task-scheduler",
+  "email": "oliver.kuruma@gmail.com",
+  "dependentChangeType": "patch",
+  "date": "2020-10-05T17:38:42.914Z"
+}
