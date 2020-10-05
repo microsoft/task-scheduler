@@ -101,7 +101,10 @@ export function createPipelineInternal(
             if (taskName === "") {
               packageTasks.set(taskId, { run: () => Promise.resolve() });
             } else {
-              const task = tasks.get(taskName)!;
+              const task = tasks.get(taskName);
+              if (!task) {
+                throw new Error(`Missing pipeline config for "${taskName}"`);
+              }
               packageTasks.set(taskId, {
                 priority: task.priorities && task.priorities[pkg],
                 run: () =>
