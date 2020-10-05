@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Mon, 05 Oct 2020 18:42:30 GMT",
+      "tag": "@microsoft/task-scheduler_v2.6.3",
+      "version": "2.6.3",
+      "comments": {
+        "patch": [
+          {
+            "comment": "Add error message for missing pipeline config",
+            "author": "elcraig@microsoft.com",
+            "commit": "b845d13afbe33627eb427a978b629cefb464b97d",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Wed, 26 Aug 2020 20:33:37 GMT",
       "tag": "@microsoft/task-scheduler_v2.6.2",
       "version": "2.6.2",

@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Wed, 26 Aug 2020 20:33:37 GMT and should not be manually modified.
+This log was last generated on Mon, 05 Oct 2020 18:42:30 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.6.3
+
+Mon, 05 Oct 2020 18:42:30 GMT
+
+### Patches
+
+- Add error message for missing pipeline config (elcraig@microsoft.com)
 
 ## 2.6.2
 
