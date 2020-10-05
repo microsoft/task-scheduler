@@ -119,7 +119,7 @@ B: [-prepare-]           [------build------]                    [----test----][-
 This repo uses `beachball` for automated releases and semver. Please include a change file by running:
 
 ```
-yarn change
+$ yarn change
 ```
 
 ## CLA
