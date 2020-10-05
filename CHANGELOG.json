@@ -2,6 +2,21 @@
   "name": "@microsoft/task-scheduler",
   "entries": [
     {
+      "date": "Mon, 05 Oct 2020 19:11:43 GMT",
+      "tag": "@microsoft/task-scheduler_v2.6.4",
+      "version": "2.6.4",
+      "comments": {
+        "patch": [
+          {
+            "comment": "bump pgraph",
+            "author": "kchau@microsoft.com",
+            "commit": "4156b855080820d47a3412cd56d14763435d305f",
+            "package": "@microsoft/task-scheduler"
+          }
+        ]
+      }
+    },
+    {
       "date": "Mon, 05 Oct 2020 18:42:30 GMT",
       "tag": "@microsoft/task-scheduler_v2.6.3",
       "version": "2.6.3",

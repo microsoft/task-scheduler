@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Mon, 05 Oct 2020 18:42:30 GMT and should not be manually modified.
+This log was last generated on Mon, 05 Oct 2020 19:11:43 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.6.4
+
+Mon, 05 Oct 2020 19:11:43 GMT
+
+### Patches
+
+- bump pgraph (kchau@microsoft.com)
 
 ## 2.6.3
 
