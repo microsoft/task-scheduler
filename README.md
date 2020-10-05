@@ -7,7 +7,7 @@ Run a sequence of steps across all the packages of a monorepo.
 - This tool does not assume any workspace/package manager so it can be used on any JavaScript repository.
 - The steps run on the main thread, sparing the cost of spawning one process per step. If parallelization is needed, the implementation of the steps can spawn processes.
 - This tool optimizes CI builds performance by avoiding unnecessary waiting (see example below).
-- This tool has no dependencies and is very small.
+- This tool is very small.
 - Its interface makes it easy to compose with other tools to get fancy pipelines (eg. parallelization, profiling, throttling...)
 - Running the tasks on the main node process allows for cross-step in-memory memoization
 
@@ -119,14 +119,14 @@ B: [-prepare-]           [------build------]                    [----test----][-
 This repo uses `beachball` for automated releases and semver. Please include a change file by running:
 
 ```
-$ yarn change
+yarn change
 ```
 
 ## CLA
 
 This project welcomes contributions and suggestions. Most contributions require you to agree to a
 Contributor License Agreement (CLA) declaring that you have the right to, and actually do, grant us
-the rights to use your contribution. For details, visit https://cla.opensource.microsoft.com.
+the rights to use your contribution. For details, visit <https://cla.opensource.microsoft.com>.
 
 When you submit a pull request, a CLA bot will automatically determine whether you need to provide
 a CLA and decorate the PR appropriately (e.g., status check, comment). Simply follow the instructions
