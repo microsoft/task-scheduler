@@ -3437,10 +3437,10 @@ p-finally@^2.0.0:
   resolved "https://registry.yarnpkg.com/p-finally/-/p-finally-2.0.1.tgz#bd6fcaa9c559a096b680806f4d657b3f0f240561"
   integrity sha512-vpm09aKwq6H9phqRQzecoDpD8TmVyGw70qmWlyq5onxY7tqyTTFVvxMykxQSQKILBSFlbXpypIw2T1Ml7+DDtw==
 
-p-graph@^1.0.2:
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/p-graph/-/p-graph-1.0.2.tgz#79f6d2c6aff1c0c1a82c74dbd1fa076396c12e7b"
-  integrity sha512-BhJHTRrq48lZ7y/6NZu+t68N2lt+oe1H6rJaDnEqZJ+1D+wEmhMze12Yxyuy9MMxX1f928p8TiAvwUMzWwOdqg==
+p-graph@^1.1.0:
+  version "1.1.0"
+  resolved "https://registry.yarnpkg.com/p-graph/-/p-graph-1.1.0.tgz#c914cf067f8d4abc31a8a3cfcb932c213845df6a"
+  integrity sha512-IfwchSZEUfZHhdHrLSUPIbZfawOshc/UrTmdhT/BRjD428Fd78jVl4NUbIvWjUq+NxrenRjx8518VtQeIvbtMA==
 
 p-limit@^1.1.0:
   version "1.3.0"

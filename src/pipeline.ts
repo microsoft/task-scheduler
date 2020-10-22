@@ -126,6 +126,7 @@ export function createPipelineInternal(
 
       await pGraph(packageTasks, taskDeps).run({
         concurrency: globals.concurrency,
+        continue: globals.continue
       });
 
       if (failures.length > 0) {
