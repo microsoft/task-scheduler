@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Mon, 05 Oct 2020 19:11:43 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Oct 2020 15:35:51 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.6.5
+
+Thu, 22 Oct 2020 15:35:51 GMT
+
+### Patches
+
+- build: Remove bundling (olwheele@microsoft.com)
 
 ## 2.6.4
 
