@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Thu, 22 Oct 2020 15:35:51 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Oct 2020 20:03:00 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.7.0
+
+Thu, 22 Oct 2020 20:03:00 GMT
+
+### Minor changes
+
+- adds ability to continue task-scheduler even when one task has failed (kchau@microsoft.com)
 
 ## 2.6.5
 
