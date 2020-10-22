@@ -16,8 +16,9 @@ export type Globals = {
   targetsOnly: boolean;
   /** The maximum number of tasks that can be running simultaneously running for the given pipeline. By default, concurrency is not limited */
   concurrency?: number;
+  continue?: boolean;
 };
 
 export type Options = Partial<
-  Pick<Globals, "logger" | "exit" | "targetsOnly" | "concurrency">
+  Pick<Globals, "logger" | "exit" | "targetsOnly" | "concurrency" | "continue">
 >;
