@@ -5,10 +5,10 @@
   "repository": "git@github.com:microsoft/task-scheduler.git",
   "license": "MIT",
   "author": "Vincent Bailly <vibailly@tuta.io>",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "build": "tsc && webpack",
+    "build": "tsc",
     "change": "beachball change",
     "checkchange": "beachball check",
     "lint": "eslint . --ext .ts",
@@ -32,6 +32,10 @@
       "git add"
     ]
   },
+  "dependencies": {
+    "p-graph": "^1.0.2",
+    "memory-streams": "^0.1.3"
+  },
   "devDependencies": {
     "@types/jest": "^25.1.4",
     "@types/node": "12.x.x",
@@ -45,13 +49,9 @@
     "husk": "^0.5.3",
     "jest": "^25.2.4",
     "lint-staged": "^10.1.1",
-    "memory-streams": "^0.1.3",
-    "p-graph": "^1.0.2",
     "prettier": "^2.0.2",
     "ts-jest": "^25.3.0",
-    "typescript": "^3.8.3",
-    "webpack": "^4.42.1",
-    "webpack-cli": "^3.3.11"
+    "typescript": "^3.8.3"
   },
   "publishConfig": {
     "access": "public"
