@@ -33,7 +33,8 @@
     ]
   },
   "dependencies": {
-    "p-graph": "^1.0.2"
+    "p-graph": "^1.0.2",
+    "memory-streams": "^0.1.3"
   },
   "devDependencies": {
     "@types/jest": "^25.1.4",
@@ -48,7 +49,6 @@
     "husk": "^0.5.3",
     "jest": "^25.2.4",
     "lint-staged": "^10.1.1",
-    "memory-streams": "^0.1.3",
     "prettier": "^2.0.2",
     "ts-jest": "^25.3.0",
     "typescript": "^3.8.3"
