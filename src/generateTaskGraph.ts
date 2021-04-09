@@ -8,7 +8,10 @@ export function generateTaskGraph(
   graph: TopologicalGraph,
   packageTaskDeps: PackageTaskDeps = [],
   targetsOnly = false,
-  canRunTaskInPkg: (taskName: string, packageName: string) => boolean = (_, __) => true
+  canRunTaskInPkg: (taskName: string, packageName: string) => boolean = (
+    _,
+    __
+  ) => true
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
 
@@ -19,9 +22,9 @@ export function generateTaskGraph(
 
   for (const pkg of scope) {
     for (const target of targets) {
-        if (canRunTaskInPkg(target, pkg)) {
-          traversalQueue.push(getTaskId(pkg, target));
-        }
+      if (canRunTaskInPkg(target, pkg)) {
+        traversalQueue.push(getTaskId(pkg, target));
+      }
     }
   }
 

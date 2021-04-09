@@ -2,14 +2,14 @@ import { generateTaskGraph } from "../generateTaskGraph";
 import { Tasks } from "../types";
 import { getPackageTaskFromId } from "../taskId";
 
-function getCanRunTaskInPkg(packageScriptMap:Map<string, string[]>) {
+function getCanRunTaskInPkg(packageScriptMap: Map<string, string[]>) {
   return function (taskName: string, packageName: string) {
-      const scripts = packageScriptMap.get(packageName);
-      if (scripts === undefined) {
-        return false;
-      }
+    const scripts = packageScriptMap.get(packageName);
+    if (scripts === undefined) {
+      return false;
+    }
 
-      return scripts.includes(taskName);
+    return scripts.includes(taskName);
   };
 }
 
@@ -54,13 +54,20 @@ describe("generateTaskGraph", () => {
   };
 
   test("targetOnly mode includes only tasks listed in targets array", async () => {
-    
     const scope = ["A", "B"];
     const targets = ["test", "bundle"];
 
     const tasks = CreateTasks();
 
-    const taskGraph = generateTaskGraph(scope, targets, tasks, graph, [], true, (_, __) => true);
+    const taskGraph = generateTaskGraph(
+      scope,
+      targets,
+      tasks,
+      graph,
+      [],
+      true,
+      (_, __) => true
+    );
     expect(taskGraph).toHaveLength(4);
 
     // None of the "from" taskId should contain "build" task
@@ -78,7 +85,15 @@ describe("generateTaskGraph", () => {
 
     const tasks = CreateTasks();
 
-    const taskGraph = generateTaskGraph(scope, targets, tasks, graph, [], false, getCanRunTaskInPkg(packageScriptMap));
+    const taskGraph = generateTaskGraph(
+      scope,
+      targets,
+      tasks,
+      graph,
+      [],
+      false,
+      getCanRunTaskInPkg(packageScriptMap)
+    );
     expect(taskGraph).toHaveLength(0);
   });
 
@@ -91,7 +106,15 @@ describe("generateTaskGraph", () => {
 
     const tasks = CreateTasks();
 
-    const taskGraph = generateTaskGraph(scope, targets, tasks, graph, [], false, getCanRunTaskInPkg(packageScriptMap));
+    const taskGraph = generateTaskGraph(
+      scope,
+      targets,
+      tasks,
+      graph,
+      [],
+      false,
+      getCanRunTaskInPkg(packageScriptMap)
+    );
     expect(taskGraph).toHaveLength(1);
   });
 
@@ -104,7 +127,15 @@ describe("generateTaskGraph", () => {
 
     const tasks = CreateTasks();
 
-    const taskGraph = generateTaskGraph(scope, targets, tasks, graph, [], false, getCanRunTaskInPkg(packageScriptMap));
+    const taskGraph = generateTaskGraph(
+      scope,
+      targets,
+      tasks,
+      graph,
+      [],
+      false,
+      getCanRunTaskInPkg(packageScriptMap)
+    );
     expect(taskGraph).toHaveLength(1);
     expect(getPackageTaskFromId(taskGraph[0][0])[1] === "build").toBeFalsy();
   });
@@ -118,7 +149,15 @@ describe("generateTaskGraph", () => {
 
     const tasks = CreateTasks();
 
-    const taskGraph = generateTaskGraph(scope, targets, tasks, graph, [["B#build","A#test"]], false, getCanRunTaskInPkg(packageScriptMap));
+    const taskGraph = generateTaskGraph(
+      scope,
+      targets,
+      tasks,
+      graph,
+      [["B#build", "A#test"]],
+      false,
+      getCanRunTaskInPkg(packageScriptMap)
+    );
     expect(taskGraph).toHaveLength(1);
   });
 });
