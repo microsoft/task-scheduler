@@ -52,7 +52,8 @@ export function createPipelineInternal(
   graph: TopologicalGraph,
   globals: Globals,
   tasks: Tasks = new Map(),
-  packageTaskDeps: PackageTaskDeps = []
+  packageTaskDeps: PackageTaskDeps = [],
+  canRunTaskInPkg: (taskName: string, packageName: string) => boolean = (_, __) => true
 ): Pipeline {
   const pipeline: Pipeline = {
     addTask(task) {
@@ -81,7 +82,8 @@ export function createPipelineInternal(
         tasks,
         graph,
         packageTaskDeps,
-        globals.targetsOnly
+        globals.targetsOnly,
+        canRunTaskInPkg
       );
       const failures: {
         task: string;
@@ -150,8 +152,9 @@ export function createPipelineInternal(
 
 export function createPipeline(
   graph: TopologicalGraph,
-  options: Options = {}
+  options: Options = {},
+  canRunTaskInPkg: (taskName: string, packageName: string) => boolean = (_, __) => true
 ): Pipeline {
   const fullOptions: Globals = { ...defaultGlobals, ...options };
-  return createPipelineInternal(graph, fullOptions, new Map(), []);
+  return createPipelineInternal(graph, fullOptions, new Map(), [], canRunTaskInPkg);
 }
