@@ -7,7 +7,11 @@ export function generateTaskGraph(
   tasks: Tasks,
   graph: TopologicalGraph,
   packageTaskDeps: PackageTaskDeps = [],
-  targetsOnly = false
+  targetsOnly = false,
+  canRunTaskInPkg: (taskName: string, packageName: string) => boolean = (
+    _,
+    __
+  ) => true
 ): PackageTaskDeps {
   const taskDeps: PackageTaskDeps = [];
 
@@ -18,7 +22,9 @@ export function generateTaskGraph(
 
   for (const pkg of scope) {
     for (const target of targets) {
-      traversalQueue.push(getTaskId(pkg, target));
+      if (canRunTaskInPkg(target, pkg)) {
+        traversalQueue.push(getTaskId(pkg, target));
+      }
     }
   }
 
@@ -47,35 +53,46 @@ export function generateTaskGraph(
       const hasDeps = task.deps && task.deps.length > 0;
       const hasPackagetTaskDeps = packageTaskDepsMap.has(taskId);
 
+      let dependencyAdded = false;
       if (hasTopoDeps) {
         for (const from of task.topoDeps!) {
           const depPkgs = graph[pkg].dependencies;
 
           // add task dep from all the package deps within repo
           for (const depPkg of depPkgs) {
-            const fromTaskId = getTaskId(depPkg, from);
-            taskDeps.push([fromTaskId, toTaskId]);
-            traversalQueue.push(fromTaskId);
+            if (canRunTaskInPkg(from, depPkg)) {
+              const fromTaskId = getTaskId(depPkg, from);
+              taskDeps.push([fromTaskId, toTaskId]);
+              traversalQueue.push(fromTaskId);
+              dependencyAdded = true;
+            }
           }
         }
       }
 
       if (hasDeps) {
         for (const from of task.deps!) {
-          const fromTaskId = getTaskId(pkg, from);
-          taskDeps.push([fromTaskId, toTaskId]);
-          traversalQueue.push(fromTaskId);
+          if (canRunTaskInPkg(from, pkg)) {
+            const fromTaskId = getTaskId(pkg, from);
+            taskDeps.push([fromTaskId, toTaskId]);
+            traversalQueue.push(fromTaskId);
+            dependencyAdded = true;
+          }
         }
       }
 
       if (hasPackagetTaskDeps) {
         for (const fromTaskId of packageTaskDepsMap.get(taskId)!) {
-          taskDeps.push([fromTaskId, toTaskId]);
-          traversalQueue.push(fromTaskId);
+          const [fromPkgName, fromTaskName] = getPackageTaskFromId(fromTaskId);
+          if (canRunTaskInPkg(fromTaskName, fromPkgName)) {
+            taskDeps.push([fromTaskId, toTaskId]);
+            traversalQueue.push(fromTaskId);
+            dependencyAdded = true;
+          }
         }
       }
 
-      if (!hasDeps && !hasTopoDeps && !hasPackagetTaskDeps) {
+      if (!dependencyAdded) {
         const fromTaskId = getTaskId(pkg, "");
         taskDeps.push([fromTaskId, toTaskId]);
       }
