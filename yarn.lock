@@ -3438,9 +3438,9 @@ p-finally@^2.0.0:
   integrity sha512-vpm09aKwq6H9phqRQzecoDpD8TmVyGw70qmWlyq5onxY7tqyTTFVvxMykxQSQKILBSFlbXpypIw2T1Ml7+DDtw==
 
 p-graph@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/p-graph/-/p-graph-1.1.0.tgz#c914cf067f8d4abc31a8a3cfcb932c213845df6a"
-  integrity sha512-IfwchSZEUfZHhdHrLSUPIbZfawOshc/UrTmdhT/BRjD428Fd78jVl4NUbIvWjUq+NxrenRjx8518VtQeIvbtMA==
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/p-graph/-/p-graph-1.1.1.tgz#9acf22ce5239afc7c08b4fd6e64b441eb171ecac"
+  integrity sha512-KdD5JEqSEbOYK5Yl4MKbHo8cNaJs+O6TW+HacoyPVau704KukYhJMhSXuC8tF332zqgB87pyAMf2FhQ54R0ugA==
 
 p-limit@^1.1.0:
   version "1.3.0"
