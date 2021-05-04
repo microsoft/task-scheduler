@@ -1,8 +1,0 @@
-{
-  "type": "patch",
-  "comment": "chore(update): upgrade p-graph to latest version (#30)",
-  "packageName": "@microsoft/task-scheduler",
-  "email": "cheruiyotbryan@gmail.com",
-  "dependentChangeType": "patch",
-  "date": "2021-05-04T06:25:07.725Z"
-}

@@ -1,8 +1,16 @@
 # Change Log - @microsoft/task-scheduler
 
-This log was last generated on Thu, 22 Oct 2020 20:03:00 GMT and should not be manually modified.
+This log was last generated on Tue, 04 May 2021 06:50:40 GMT and should not be manually modified.
 
 <!-- Start content -->
+
+## 2.7.1
+
+Tue, 04 May 2021 06:50:40 GMT
+
+### Patches
+
+- chore(update): upgrade p-graph to latest version (#30) (cheruiyotbryan@gmail.com)
 
 ## 2.7.0
 
