@@ -17,6 +17,9 @@
     "start": "tsc -w --preserveWatchOutput",
     "test": "jest"
   },
+  "files": [
+    "/lib"
+  ],
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged"
